@@ -59,7 +59,7 @@ namespace AllYourPlates.WebMVC.Controllers
         {
             var plate = new Plate
             {
-                PlateId = Guid.NewGuid(),
+                PlateId = Guid.NewGuid(), 
                 Timestamp = plateVM.Timestamp,
                 Description = plateVM.Description
             };
