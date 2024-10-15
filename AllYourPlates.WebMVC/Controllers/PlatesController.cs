@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using AllYourPlates.WebMVC.Data;
+﻿using AllYourPlates.WebMVC.Data;
 using AllYourPlates.WebMVC.Models;
 using AllYourPlates.WebMVC.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace AllYourPlates.WebMVC.Controllers
 {
@@ -47,25 +44,60 @@ namespace AllYourPlates.WebMVC.Controllers
         // GET: Plates/Create
         public IActionResult Create()
         {
-            return View();
+            return View(new PlateViewModel()
+            {
+                Timestamp = DateTime.Now
+            }
+            );
         }
 
-        // POST: Plates/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // ...
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PlateId,Timestamp,Description,PlateFile")] PlateViewModel plateVM)
         {
             var plate = new Plate
             {
-                PlateId = Guid.NewGuid(), 
+                PlateId = Guid.NewGuid(),
                 Timestamp = plateVM.Timestamp,
                 Description = plateVM.Description
             };
+
+            if (plateVM.PlateFile != null && plateVM.PlateFile.Length > 0)
+            {
+                var extension = Path.GetExtension(plateVM.PlateFile.FileName).ToLower();
+                var newFileName = Path.ChangeExtension(plate.PlateId.ToString(), ".jpeg");
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/plates", newFileName);
+
+                using (var memoryStream = new MemoryStream())
+                {
+                    await plateVM.PlateFile.CopyToAsync(memoryStream);
+                    memoryStream.Seek(0, SeekOrigin.Begin);
+
+                    // Check if the file is not a JPEG
+                    if (extension != ".jpeg" && extension != ".jpg")
+                    {
+                        // Load the image using ImageSharp
+                        using (var image = Image.Load(memoryStream))
+                        {
+                            // Save it as a JPEG
+                            image.Save(filePath, new JpegEncoder());
+                        }
+                    }
+                    else
+                    {
+                        // If the file is already a JPEG, save it directly
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await plateVM.PlateFile.CopyToAsync(fileStream);
+                        }
+                    }
+                }
+            }
+
             if (ModelState.IsValid)
             {
-                plate.PlateId = Guid.NewGuid();
                 _context.Add(plate);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
