@@ -3,6 +3,7 @@ using AllYourPlates.WebMVC.Models;
 using AllYourPlates.WebMVC.ViewModels;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
@@ -58,73 +59,76 @@ namespace AllYourPlates.WebMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PlateId,Timestamp,Description,PlateFile")] PlateViewModel plateVM)
+        public async Task<IActionResult> Create([Bind("PlateId,Timestamp,Description,PlateFiles")] PlateViewModel plateVM)
         {
-            var plate = new Plate
+            if (plateVM.PlateFiles != null && plateVM.PlateFiles.Count > 0)
             {
-                PlateId = Guid.NewGuid(),
-                Timestamp = plateVM.Timestamp,
-                Description = plateVM.Description
-            };
-
-            if (plateVM.PlateFile != null && plateVM.PlateFile.Length > 0)
-            {
-                var extension = Path.GetExtension(plateVM.PlateFile.FileName).ToLower();
-                var newFileName = Path.ChangeExtension(plate.PlateId.ToString(), ".jpeg");
-                var filePath = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot/plates", newFileName);
-
-
-                
-
-                using (var memoryStream = new MemoryStream())
+                foreach (var plateFile in plateVM.PlateFiles)
                 {
-
-                    await plateVM.PlateFile.CopyToAsync(memoryStream);
-                    memoryStream.Seek(0, SeekOrigin.Begin);
-
-
-                    // Extract EXIF metadata
-                    var metadata = ImageMetadataReader.ReadMetadata(memoryStream);
-
-                    // Get the date taken from the EXIF data
-                    var dateTaken = metadata.OfType<ExifSubIfdDirectory>()
-                        .FirstOrDefault()?.GetDateTime(ExifDirectoryBase.TagDateTimeOriginal);
-
-                    if (dateTaken.HasValue)
+                    var plate = new Plate
                     {
-                        // Use the date taken value
-                        plate.Timestamp = dateTaken.Value;
-                    }
+                        PlateId = Guid.NewGuid(),
+                        Timestamp = plateVM.Timestamp,
+                        Description = plateVM.Description
+                    };
+                    var extension = Path.GetExtension(plateFile.FileName).ToLower();
+                    var newFileName = Path.ChangeExtension(plate.PlateId.ToString(), ".jpeg");
+                    var filePath = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot/plates", newFileName);
 
-                    // Check if the file is not a JPEG
-                    if (extension != ".jpeg" && extension != ".jpg")
+                    using (var memoryStream = new MemoryStream())
                     {
-                        // Load the image using ImageSharp
+
+                        await plateFile.CopyToAsync(memoryStream);
                         memoryStream.Seek(0, SeekOrigin.Begin);
-                        using (var image = Image.Load(memoryStream))
+
+
+                        // Extract EXIF metadata
+                        var metadata = ImageMetadataReader.ReadMetadata(memoryStream);
+
+                        // Get the date taken from the EXIF data
+                        var dateTaken = metadata.OfType<ExifSubIfdDirectory>()
+                            .FirstOrDefault()?.GetDateTime(ExifDirectoryBase.TagDateTimeOriginal);
+
+                        if (dateTaken.HasValue)
                         {
-                            // Save it as a JPEG
-                            image.Save(filePath, new JpegEncoder());
+                            // Use the date taken value
+                            plate.Timestamp = dateTaken.Value;
+                        }
+
+                        // Check if the file is not a JPEG
+                        if (extension != ".jpeg" && extension != ".jpg")
+                        {
+                            // Load the image using ImageSharp
+                            memoryStream.Seek(0, SeekOrigin.Begin);
+                            using (var image = Image.Load(memoryStream))
+                            {
+                                // Save it as a JPEG
+                                image.Save(filePath, new JpegEncoder());
+                            }
+                        }
+                        else
+                        {
+                            // If the file is already a JPEG, save it directly
+                            using (var fileStream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await plateFile.CopyToAsync(fileStream);
+                            }
                         }
                     }
-                    else
+                    if (ModelState.IsValid)
                     {
-                        // If the file is already a JPEG, save it directly
-                        using (var fileStream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await plateVM.PlateFile.CopyToAsync(fileStream);
-                        }
+                        _context.Add(plate);
+                        await _context.SaveChangesAsync();
                     }
                 }
             }
 
             if (ModelState.IsValid)
             {
-                _context.Add(plate);
-                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(plate);
+
+            return View();
         }
 
         // GET: Plates/Edit/5
@@ -214,6 +218,15 @@ namespace AllYourPlates.WebMVC.Controllers
         private bool PlateExists(Guid id)
         {
             return _context.Plate.Any(e => e.PlateId == id);
+        }
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.Configure<FormOptions>(options =>
+            {
+                options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100 MB
+            });
+
+            // Other service configurations...
         }
     }
 }
