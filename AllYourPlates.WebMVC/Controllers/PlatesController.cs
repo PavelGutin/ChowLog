@@ -1,10 +1,13 @@
 ﻿using AllYourPlates.WebMVC.Data;
 using AllYourPlates.WebMVC.Models;
 using AllYourPlates.WebMVC.ViewModels;
+using MetadataExtractor;
+using MetadataExtractor.Formats.Exif;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
+
 
 namespace AllYourPlates.WebMVC.Controllers
 {
@@ -68,17 +71,36 @@ namespace AllYourPlates.WebMVC.Controllers
             {
                 var extension = Path.GetExtension(plateVM.PlateFile.FileName).ToLower();
                 var newFileName = Path.ChangeExtension(plate.PlateId.ToString(), ".jpeg");
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/plates", newFileName);
+                var filePath = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot/plates", newFileName);
+
+
+                
 
                 using (var memoryStream = new MemoryStream())
                 {
+
                     await plateVM.PlateFile.CopyToAsync(memoryStream);
                     memoryStream.Seek(0, SeekOrigin.Begin);
+
+
+                    // Extract EXIF metadata
+                    var metadata = ImageMetadataReader.ReadMetadata(memoryStream);
+
+                    // Get the date taken from the EXIF data
+                    var dateTaken = metadata.OfType<ExifSubIfdDirectory>()
+                        .FirstOrDefault()?.GetDateTime(ExifDirectoryBase.TagDateTimeOriginal);
+
+                    if (dateTaken.HasValue)
+                    {
+                        // Use the date taken value
+                        plate.Timestamp = dateTaken.Value;
+                    }
 
                     // Check if the file is not a JPEG
                     if (extension != ".jpeg" && extension != ".jpg")
                     {
                         // Load the image using ImageSharp
+                        memoryStream.Seek(0, SeekOrigin.Begin);
                         using (var image = Image.Load(memoryStream))
                         {
                             // Save it as a JPEG
