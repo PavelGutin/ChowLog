@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
 
 
 namespace AllYourPlates.WebMVC.Controllers
@@ -89,40 +90,47 @@ namespace AllYourPlates.WebMVC.Controllers
 
                         await plateFile.CopyToAsync(memoryStream);
                         memoryStream.Seek(0, SeekOrigin.Begin);
-
-
-                        // Extract EXIF metadata
                         var metadata = ImageMetadataReader.ReadMetadata(memoryStream);
 
-                        // Get the date taken from the EXIF data
                         var dateTaken = metadata.OfType<ExifSubIfdDirectory>()
                             .FirstOrDefault()?.GetDateTime(ExifDirectoryBase.TagDateTimeOriginal);
 
                         if (dateTaken.HasValue)
                         {
-                            // Use the date taken value
                             plate.Timestamp = dateTaken.Value;
                         }
 
-                        // Check if the file is not a JPEG
                         if (extension != ".jpeg" && extension != ".jpg")
                         {
-                            // Load the image using ImageSharp
                             memoryStream.Seek(0, SeekOrigin.Begin);
                             using (var image = Image.Load(memoryStream))
                             {
-                                // Save it as a JPEG
                                 image.Save(filePath, new JpegEncoder());
                             }
                         }
                         else
                         {
-                            // If the file is already a JPEG, save it directly
                             using (var fileStream = new FileStream(filePath, FileMode.Create))
                             {
                                 await plateFile.CopyToAsync(fileStream);
                             }
                         }
+
+
+
+                        var thumbnailPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_thmb.jpeg");
+                        var thumbnailSize = new Size(200, 200);
+                        using (var image = Image.Load(filePath))
+                        {
+                            image.Mutate(x => x.Resize(new ResizeOptions
+                            {
+                                Size = thumbnailSize,
+                                Mode = ResizeMode.Max
+                            }));
+                            image.Save(thumbnailPath, new JpegEncoder());
+                        }
+
+
                     }
                     if (ModelState.IsValid)
                     {
