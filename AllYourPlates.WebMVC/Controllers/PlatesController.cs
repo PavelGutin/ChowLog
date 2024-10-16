@@ -3,7 +3,7 @@ using AllYourPlates.WebMVC.Models;
 using AllYourPlates.WebMVC.ViewModels;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
@@ -16,16 +16,21 @@ namespace AllYourPlates.WebMVC.Controllers
     public class PlateController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public PlateController(ApplicationDbContext context)
+        public PlateController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Plates
         public async Task<IActionResult> Index()
         {
+            var user = await _userManager.GetUserAsync(User);
+
             var plates = await _context.Plate
+                .Where(p => p.User == user)
                 .GroupBy(p => p.Timestamp.Date)
                 .Select(g => new GroupedPlatesViewModel
                 {
@@ -71,6 +76,8 @@ namespace AllYourPlates.WebMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PlateId,Timestamp,Description,PlateFiles")] PlateViewModel plateVM)
         {
+            var user = await _userManager.GetUserAsync(User);
+
             if (plateVM.PlateFiles != null && plateVM.PlateFiles.Count > 0)
             {
                 foreach (var plateFile in plateVM.PlateFiles)
@@ -79,7 +86,8 @@ namespace AllYourPlates.WebMVC.Controllers
                     {
                         PlateId = Guid.NewGuid(),
                         Timestamp = plateVM.Timestamp,
-                        Description = plateVM.Description
+                        Description = plateVM.Description,
+                        User = user
                     };
                     var extension = Path.GetExtension(plateFile.FileName).ToLower();
                     var newFileName = Path.ChangeExtension(plate.PlateId.ToString(), ".jpeg");
@@ -116,8 +124,6 @@ namespace AllYourPlates.WebMVC.Controllers
                             }
                         }
 
-
-
                         var thumbnailPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_thmb.jpeg");
                         var thumbnailSize = new Size(200, 200);
                         using (var image = Image.Load(filePath))
@@ -129,9 +135,8 @@ namespace AllYourPlates.WebMVC.Controllers
                             }));
                             image.Save(thumbnailPath, new JpegEncoder());
                         }
-
-
                     }
+
                     if (ModelState.IsValid)
                     {
                         _context.Add(plate);
