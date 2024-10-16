@@ -10,50 +10,75 @@
     <a asp-action="Create">Create New</a>
 </p>
 
-
-
-@foreach (var item in Model)
-{
-    <h2>@item.Date</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                     @Html.DisplayNameFor(model => item.Plates.First().Timestamp) 
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => item.Plates.First().Description)
-                </th>
-                <th>
-                    Image
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var plate in item.Plates)
+<div class="container mt-4">
+    @foreach (var group in Model)
+    {
+        <h2 class="mb-3">@group.Date.ToString("MMMM d, yyyy")</h2>
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+            @foreach (var plate in group.Plates)
             {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => plate.Timestamp)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => plate.Description)
-                    </td>
-                    <td>
-                        <img src="~/plates/@(plate.PlateId)_thmb.jpeg" style="height: 100px; width: auto;" />
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@plate.PlateId">Edit</a> |
-                        <a asp-action="Details" asp-route-id="@plate.PlateId">Details</a> |
-                        <a asp-action="Delete" asp-route-id="@plate.PlateId">Delete</a>
-                    </td>
-                </tr>
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="~/plates/@(plate.PlateId)_thmb.jpeg"
+                             alt="NO ALT YET"
+                             class="card-img-top"
+                             data-bs-toggle="modal"
+                             data-bs-target="#imageModal"
+                             data-plate-id="@plate.PlateId"
+                             data-img-url="@Url.Content($"~/plates/{plate.PlateId}.jpeg")"
+                             data-img-alt="NO ALT YET"
+                             style="cursor: pointer;">
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    }
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <img src="" class="img-fluid mb-3" id="modalImage" alt="">
+                <div class="d-flex justify-content-center">
+                    <a href="#" class="btn btn-primary me-2" id="editButton">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </a>
+                    <a href="#" class="btn btn-info me-2" id="detailsButton">
+                        <i class="bi bi-info-circle"></i> Details
+                    </a>
+                    <a href="#" class="btn btn-danger" id="deleteButton">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var imageModal = document.getElementById('imageModal')
+        imageModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget
+            var imgUrl = button.getAttribute('data-img-url')
+            var imgAlt = button.getAttribute('data-img-alt')
+            var plateId = button.getAttribute('data-plate-id')
+            var modalImage = imageModal.querySelector('#modalImage')
+            modalImage.src = imgUrl
+            modalImage.alt = imgAlt
+
+            var editButton = imageModal.querySelector('#editButton')
+            var detailsButton = imageModal.querySelector('#detailsButton')
+            var deleteButton = imageModal.querySelector('#deleteButton')
+
+            var baseUrl = '@Url.Action("", "Plate")'; 
+
+            editButton.href = `${baseUrl}/Edit/${plateId}`;
+            detailsButton.href = `${baseUrl}/Details/${plateId}`;
+            deleteButton.href = `${baseUrl}/Delete/${plateId}`;
+
+        })
+    </script>
 }
-
-
-
-
