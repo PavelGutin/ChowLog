@@ -24,7 +24,16 @@ namespace AllYourPlates.WebMVC.Controllers
         // GET: Plates
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Plate.ToListAsync());
+            var plates = await _context.Plate
+                .GroupBy(p => p.Timestamp.Date)
+                .Select(g => new GroupedPlatesViewModel
+                {
+                    Date = g.Key,
+                    Plates = g.ToList()
+                })
+                .ToListAsync();
+
+            return View(plates);
         }
 
         // GET: Plates/Details/5
@@ -219,14 +228,14 @@ namespace AllYourPlates.WebMVC.Controllers
         {
             return _context.Plate.Any(e => e.PlateId == id);
         }
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.Configure<FormOptions>(options =>
-            {
-                options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100 MB
-            });
+        //public void ConfigureServices(IServiceCollection services)
+        //{
+        //    services.Configure<FormOptions>(options =>
+        //    {
+        //        options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100 MB
+        //    });
 
-            // Other service configurations...
-        }
+        //    // Other service configurations...
+        //}
     }
 }
