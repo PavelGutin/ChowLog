@@ -1,4 +1,5 @@
-﻿using AllYourPlates.WebMVC.Data;
+﻿using AllYourPlates.Services;
+using AllYourPlates.WebMVC.Data;
 using AllYourPlates.WebMVC.Models;
 using AllYourPlates.WebMVC.ViewModels;
 using MetadataExtractor;
@@ -17,11 +18,13 @@ namespace AllYourPlates.WebMVC.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly ThumbnailProcessingService _thumbnailService;
 
-        public PlateController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public PlateController(ApplicationDbContext context, UserManager<IdentityUser> userManager, ThumbnailProcessingService thumbnailService)
         {
             _context = context;
             _userManager = userManager;
+            _thumbnailService = thumbnailService;
         }
 
         // GET: Plates
@@ -124,17 +127,22 @@ namespace AllYourPlates.WebMVC.Controllers
                             }
                         }
 
-                        var thumbnailPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_thmb.jpeg");
-                        var thumbnailSize = new Size(200, 200);
-                        using (var image = Image.Load(filePath))
-                        {
-                            image.Mutate(x => x.Resize(new ResizeOptions
-                            {
-                                Size = thumbnailSize,
-                                Mode = ResizeMode.Max
-                            }));
-                            image.Save(thumbnailPath, new JpegEncoder());
-                        }
+                        _thumbnailService.EnqueueFile(filePath);
+
+                        //Task.Run(() =>
+                        //{
+                        //    var thumbnailPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_thmb.jpeg");
+                        //    var thumbnailSize = new Size(200, 200);
+                        //    using (var image = Image.Load(filePath))
+                        //    {
+                        //        image.Mutate(x => x.Resize(new ResizeOptions
+                        //        {
+                        //            Size = thumbnailSize,
+                        //            Mode = ResizeMode.Max
+                        //        }));
+                        //        image.Save(thumbnailPath, new JpegEncoder());
+                        //    }
+                        //});
                     }
 
                     if (ModelState.IsValid)

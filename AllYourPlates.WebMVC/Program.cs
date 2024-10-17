@@ -1,3 +1,4 @@
+using AllYourPlates.Services;
 using AllYourPlates.WebMVC.Data;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -21,6 +22,9 @@ builder.Services.Configure<FormOptions>(options =>
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSingleton<ThumbnailProcessingService>();
+builder.Services.AddHostedService(provider => provider.GetService<ThumbnailProcessingService>());
 
 var app = builder.Build();
 
