@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
+using System.Configuration;
 
 
 namespace AllYourPlates.WebMVC.Controllers
@@ -19,12 +20,21 @@ namespace AllYourPlates.WebMVC.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ThumbnailProcessingService _thumbnailService;
+        private readonly ImageDescriptionService _imageDescriptionService;
+        private readonly IConfiguration _configuration;
 
-        public PlateController(ApplicationDbContext context, UserManager<IdentityUser> userManager, ThumbnailProcessingService thumbnailService)
+        public PlateController(ApplicationDbContext context, 
+            UserManager<IdentityUser> userManager, 
+            ThumbnailProcessingService thumbnailService,
+            IConfiguration configuration,
+            ImageDescriptionService imageDescriptionService
+            )
         {
             _context = context;
             _userManager = userManager;
             _thumbnailService = thumbnailService;
+            _configuration = configuration;
+            _imageDescriptionService = imageDescriptionService;
         }
 
         // GET: Plates
@@ -128,6 +138,7 @@ namespace AllYourPlates.WebMVC.Controllers
                         }
 
                         _thumbnailService.EnqueueFile(filePath);
+                        _imageDescriptionService.EnqueueFile(filePath);
 
                         //Task.Run(() =>
                         //{

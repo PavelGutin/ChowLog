@@ -24,7 +24,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<ThumbnailProcessingService>();
+builder.Services.AddSingleton<ImageDescriptionService>();
+
 builder.Services.AddHostedService(provider => provider.GetService<ThumbnailProcessingService>());
+builder.Services.AddHostedService(provider => provider.GetService<ImageDescriptionService>());
 
 var app = builder.Build();
 
