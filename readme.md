@@ -3,7 +3,7 @@ And the actual act of recording is what's important, not what your record.
 The idea behing "All Your Plates" is to just let you take a picture of your food and it will automatically log it for you.
 
 
-There are many projects like this already, but this one is mine. 
+There are many projects like this already, but this one is mine.  
 
 For development, the secrets are stored in the user secrets store. 
 
