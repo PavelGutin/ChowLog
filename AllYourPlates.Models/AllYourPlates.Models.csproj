@@ -1,25 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aspnet-AllYourPlates.WebMVC-33b2992a-edac-47a0-a21f-bb35582a2520</UserSecretsId>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="wwwroot\plates\**" />
-    <Content Remove="wwwroot\plates\**" />
-    <EmbeddedResource Remove="wwwroot\plates\**" />
-    <None Remove="wwwroot\plates\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Data\ApplicationDbContext.cs" />
-    <Compile Remove="Models\Plate.cs" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="MetadataExtractor" Version="2.8.1" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.10" />
@@ -30,11 +16,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.6" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\AllYourPlates.DataAccess\AllYourPlates.DataAccess.csproj" />
-    <ProjectReference Include="..\AllYourPlates.Services\AllYourPlates.Services.csproj" />
   </ItemGroup>
 
 </Project>

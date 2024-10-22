@@ -1,24 +1,30 @@
 ﻿namespace AllYourPlates.Services
 {
+    using AllYourPlates.WebMVC.DataAccess;
+    using Azure;
+    using Azure.AI.Vision.ImageAnalysis;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using System;
     using System.Collections.Concurrent;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
-    using SixLabors.ImageSharp;
-    using SixLabors.ImageSharp.Processing;
-    using SixLabors.ImageSharp.Formats.Jpeg;
-    using Azure.AI.Vision.ImageAnalysis;
-    using Azure;
-    using Microsoft.Extensions.Configuration;
 
     public class ImageDescriptionService : BackgroundService
     {
         private readonly IConfiguration _configuration;
-        public ImageDescriptionService(IConfiguration configuration)
+        private readonly ApplicationDbContext _context;
+        private readonly IServiceProvider _serviceProvider;
+
+        public ImageDescriptionService(IServiceProvider serviceProvider, IConfiguration configuration)
         {
+            _serviceProvider = serviceProvider;
             _configuration = configuration;
+            var scope = _serviceProvider.CreateScope();
+            _context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         }
         private readonly ConcurrentQueue<string> _filePaths = new ConcurrentQueue<string>();
 
@@ -50,22 +56,44 @@
             }
         }
 
-        private Task ProcessImage(string filePath)
+        private async Task ProcessImage(string filePath)
         {
-            var thumbnailPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_thmb.jpeg");
-            var thumbnailSize = new Size(200, 200);
-
-
-
 
             ImageAnalysisClient client = new ImageAnalysisClient(
                 new Uri(_configuration["computerVisionEndpoint"]),
                 new AzureKeyCredential(_configuration["computerVisionAPIKey"]));
 
+            // Use a file stream to pass the image data to the analyze call
+            using FileStream stream = new FileStream(filePath,FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            //call the API here
+            var plateId = Path.GetFileNameWithoutExtension(filePath);
 
-            return Task.CompletedTask;
+            ImageAnalysisResult result = client.Analyze(
+                BinaryData.FromStream(stream),
+                VisualFeatures.Caption);
+
+            // Display analysis results
+            // Get image captions
+            if (result.Caption.Text != null)
+            {
+                Console.WriteLine(" Caption:");
+                Console.WriteLine($"   \"{result.Caption.Text}\", Confidence {result.Caption.Confidence:0.00}\n");
+
+                
+
+                // Update the Plate object
+                var plate = await _context.Plate.FindAsync(Guid.Parse(plateId));
+                if (plate != null)
+                {
+                    // Update plate properties as needed
+                    plate.Description = result.Caption.Text;
+                    _context.Update(plate);
+                    await _context.SaveChangesAsync();
+                }
+
+            }
+
+            //return Task.CompletedTask;
         }
     }
 }

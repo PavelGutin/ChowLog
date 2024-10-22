@@ -47,7 +47,8 @@
             var thumbnailPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_thmb.jpeg");
             var thumbnailSize = new Size(200, 200);
 
-            using (var image = Image.Load(filePath))
+            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var image = Image.Load(stream))
             {
                 image.Mutate(x => x.Resize(new ResizeOptions
                 {

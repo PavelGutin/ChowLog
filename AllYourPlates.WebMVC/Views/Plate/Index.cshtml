@@ -20,13 +20,13 @@
                 <div class="col">
                     <div class="card h-100">
                         <img src="~/plates/@(plate.PlateId)_thmb.jpeg"
-                             alt="NO ALT YET"
+                             alt="@plate.Description"
                              class="card-img-top"
                              data-bs-toggle="modal"
                              data-bs-target="#imageModal"
                              data-plate-id="@plate.PlateId"
                              data-img-url="@Url.Content($"~/plates/{plate.PlateId}.jpeg")"
-                             data-img-alt="NO ALT YET"
+                             data-img-alt="@plate.Description"
                              style="cursor: pointer;">
                     </div>
                 </div>
@@ -41,6 +41,8 @@
         <div class="modal-content">
             <div class="modal-body">
                 <img src="" class="img-fluid mb-3" id="modalImage" alt="">
+                <div class="d-flex justify-content-center" id="imgDesc">
+                </div>
                 <div class="d-flex justify-content-center">
                     <a href="#" class="btn btn-primary me-2" id="editButton">
                         <i class="bi bi-pencil-square"></i> Edit
@@ -57,28 +59,31 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        var imageModal = document.getElementById('imageModal')
-        imageModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget
-            var imgUrl = button.getAttribute('data-img-url')
-            var imgAlt = button.getAttribute('data-img-alt')
-            var plateId = button.getAttribute('data-plate-id')
-            var modalImage = imageModal.querySelector('#modalImage')
-            modalImage.src = imgUrl
-            modalImage.alt = imgAlt
+@section Scripts {  
+   <script>  
+       var imageModal = document.getElementById('imageModal')  
+       imageModal.addEventListener('show.bs.modal', function (event) {  
+           var button = event.relatedTarget  
+           var imgUrl = button.getAttribute('data-img-url')  
+           var imgAlt = button.getAttribute('data-img-alt')  
+           var plateId = button.getAttribute('data-plate-id')  
+           var modalImage = imageModal.querySelector('#modalImage')  
+           modalImage.src = imgUrl  
+           modalImage.alt = imgAlt  
 
-            var editButton = imageModal.querySelector('#editButton')
-            var detailsButton = imageModal.querySelector('#detailsButton')
-            var deleteButton = imageModal.querySelector('#deleteButton')
+           var imgDesc = imageModal.querySelector('#imgDesc')  
+           imgDesc.innerHTML = imgAlt;  
 
-            var baseUrl = '@Url.Action("", "Plate")'; 
+           var editButton = imageModal.querySelector('#editButton')  
+           var detailsButton = imageModal.querySelector('#detailsButton')  
+           var deleteButton = imageModal.querySelector('#deleteButton')  
 
-            editButton.href = `${baseUrl}/Edit/${plateId}`;
-            detailsButton.href = `${baseUrl}/Details/${plateId}`;
-            deleteButton.href = `${baseUrl}/Delete/${plateId}`;
+           var baseUrl = '@Url.Action("", "Plate")';  
 
-        })
-    </script>
+           editButton.href = `${baseUrl}/Edit/${plateId}`;  
+           detailsButton.href = `${baseUrl}/Details/${plateId}`;  
+           deleteButton.href = `${baseUrl}/Delete/${plateId}`;  
+
+       })  
+   </script>  
 }

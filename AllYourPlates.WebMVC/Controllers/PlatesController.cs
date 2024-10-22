@@ -1,5 +1,5 @@
 ﻿using AllYourPlates.Services;
-using AllYourPlates.WebMVC.Data;
+using AllYourPlates.WebMVC.DataAccess;
 using AllYourPlates.WebMVC.Models;
 using AllYourPlates.WebMVC.ViewModels;
 using MetadataExtractor;
@@ -9,8 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Processing;
-using System.Configuration;
 
 
 namespace AllYourPlates.WebMVC.Controllers
@@ -137,23 +135,10 @@ namespace AllYourPlates.WebMVC.Controllers
                             }
                         }
 
+                        //TODO: Figure out what to pass to these services. The current approach is hacky and will just grab the GUID from the filename
                         _thumbnailService.EnqueueFile(filePath);
                         _imageDescriptionService.EnqueueFile(filePath);
 
-                        //Task.Run(() =>
-                        //{
-                        //    var thumbnailPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_thmb.jpeg");
-                        //    var thumbnailSize = new Size(200, 200);
-                        //    using (var image = Image.Load(filePath))
-                        //    {
-                        //        image.Mutate(x => x.Resize(new ResizeOptions
-                        //        {
-                        //            Size = thumbnailSize,
-                        //            Mode = ResizeMode.Max
-                        //        }));
-                        //        image.Save(thumbnailPath, new JpegEncoder());
-                        //    }
-                        //});
                     }
 
                     if (ModelState.IsValid)
