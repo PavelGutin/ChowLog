@@ -1,0 +1,31 @@
+version: '3.8' # Specify the Compose file version
+
+services:
+  allyourplates.webmvc:
+    image: ${DOCKER_REGISTRY-}allyourplateswebmvc
+    build:
+      context: .
+      dockerfile: AllYourPlates.WebMVC/Dockerfile
+    ports:
+      - "5000:80" # Map port 80 in the container to 5000 on the host
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DefaultConnection=Server=db;Database=AllYourPlatesDB;User Id=sa;Password=1qaz!QAZ;TrustServerCertificate=True;
+    depends_on:
+      - db # Ensure the database starts before the app
+    networks:
+      - app-network
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest # Use SQL Server Express or Developer
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "1qaz!QAZ"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433" # Expose the SQL Server default port
+    networks:
+      - app-network
+
+networks:
+  app-network: # Shared network for app and database communication
