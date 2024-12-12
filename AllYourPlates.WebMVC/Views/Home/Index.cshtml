@@ -7,4 +7,36 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
     <p>Current Environment: @environment</p>
+
+    <!-- Container for the list of messages -->
+    <ul id="messageList"></ul> <!-- List to hold messages -->
 </div>
+
+@section Scripts {
+    <script type="text/javascript">
+        // Set up the connection to the SignalR hub
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub") // URL to your SignalR hub
+            .build();
+
+        // Set up a handler to receive messages from the hub
+        connection.on("ReceiveMessage", function (message) {
+            // Create a new <li> element
+            const li = document.createElement("li");
+
+            // Set the text of the <li> element to the message
+            li.textContent = message;
+
+            // Find the <ul> element to append the new message
+            const messageList = document.getElementById("messageList");
+
+            // Append the new message to the <ul>
+            messageList.appendChild(li);
+        });
+
+        // Start the connection
+        connection.start().catch(function (err) {
+            console.error("Error while starting connection: " + err);
+        });
+    </script>
+}

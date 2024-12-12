@@ -1,5 +1,5 @@
+using AllYourPlates.Hubs;
 using AllYourPlates.Services;
-using AllYourPlates.WebMVC.Data;
 using AllYourPlates.WebMVC.DataAccess;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -17,6 +17,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+builder.Services.AddSignalR();
 
 builder.Services.Configure<FormOptions>(options =>
 {
@@ -121,5 +122,11 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<NotificationHub>("/notificationHub");
+});
 
 app.Run();

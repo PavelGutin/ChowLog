@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AllYourPlates.DataAccess\AllYourPlates.DataAccess.csproj" />
+    <ProjectReference Include="..\AllYourPlates.Hubs\AllYourPlates.Hubs.csproj" />
   </ItemGroup>
 
 </Project>

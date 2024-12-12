@@ -1,8 +1,10 @@
 ﻿namespace AllYourPlates.Services
 {
+    using AllYourPlates.Hubs;
     using AllYourPlates.WebMVC.DataAccess;
     using Azure;
     using Azure.AI.Vision.ImageAnalysis;
+    using Microsoft.AspNetCore.SignalR;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -20,8 +22,12 @@
         private readonly ApplicationDbContext _context;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ThumbnailProcessingService> _logger;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public ImageDescriptionService(IServiceProvider serviceProvider, IConfiguration configuration, ILogger<ThumbnailProcessingService> logger)
+        public ImageDescriptionService(IServiceProvider serviceProvider, 
+            IConfiguration configuration, 
+            ILogger<ThumbnailProcessingService> logger, 
+            IHubContext<NotificationHub> hubContext)
         {
             try
             {
@@ -30,6 +36,7 @@
                 var scope = _serviceProvider.CreateScope();
                 _context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 _logger = logger;
+                _hubContext = hubContext;
             }
             catch (Exception ex)
             {
@@ -70,6 +77,8 @@
 
         private async Task ProcessImage(string filePath)
         {
+            NotifyClients("Starting to process image " + filePath);
+
             _logger.LogInformation($"Generating AI description for {filePath}");
             try
             {
@@ -112,8 +121,15 @@
 
                 _logger.LogError(ex, "AI ERRORXXXXXXXXXXXXXXXX");
             }
+            NotifyClients("Done processing image " + filePath);
 
             //return Task.CompletedTask;
+        }
+
+        public async Task NotifyClients(string message)
+        {
+            // Notify all clients connected to the NotificationHub
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
         }
     }
 }
