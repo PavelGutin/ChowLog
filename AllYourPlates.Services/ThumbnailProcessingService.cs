@@ -9,11 +9,17 @@
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Processing;
     using SixLabors.ImageSharp.Formats.Jpeg;
+    using Microsoft.Extensions.Logging;
 
     public class ThumbnailProcessingService : BackgroundService
     {
         private readonly ConcurrentQueue<string> _filePaths = new ConcurrentQueue<string>();
-
+        
+        private readonly ILogger<ThumbnailProcessingService> _logger;
+        public ThumbnailProcessingService(ILogger<ThumbnailProcessingService> logger)
+        {
+            _logger = logger;
+        }
         public void EnqueueFile(string filePath)
         {
             _filePaths.Enqueue(filePath);
@@ -31,19 +37,20 @@
                     }
                     catch (Exception ex)
                     {
-                        // Handle exception (log it, etc.)
+                        _logger.LogError(ex.Message);
                         Console.WriteLine(ex.Message);
                     }
                 }
                 else
                 {
-                    await Task.Delay(1000, stoppingToken); // Delay to avoid busy-waiting
+                    await Task.Delay(5000, stoppingToken); // Delay to avoid busy-waiting
                 }
             }
         }
 
-        private Task ProcessThumbnail(string filePath)
+        private async Task ProcessThumbnail(string filePath)
         {
+            _logger.LogInformation($"Generating thumbnail for {filePath}");
             var thumbnailPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_thmb.jpeg");
             var thumbnailSize = new Size(200, 200);
 
@@ -55,10 +62,10 @@
                     Size = thumbnailSize,
                     Mode = ResizeMode.Max
                 }));
-                image.Save(thumbnailPath, new JpegEncoder());
+                await image.SaveAsync(thumbnailPath, new JpegEncoder());
             }
 
-            return Task.CompletedTask;
+            //return Task.CompletedTask;
         }
     }
 }

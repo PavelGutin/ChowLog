@@ -7,6 +7,7 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Logging;
     using System;
     using System.Collections.Concurrent;
     using System.IO;
@@ -18,13 +19,23 @@
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<ThumbnailProcessingService> _logger;
 
-        public ImageDescriptionService(IServiceProvider serviceProvider, IConfiguration configuration)
+        public ImageDescriptionService(IServiceProvider serviceProvider, IConfiguration configuration, ILogger<ThumbnailProcessingService> logger)
         {
-            _serviceProvider = serviceProvider;
-            _configuration = configuration;
-            var scope = _serviceProvider.CreateScope();
-            _context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            try
+            {
+                _serviceProvider = serviceProvider;
+                _configuration = configuration;
+                var scope = _serviceProvider.CreateScope();
+                _context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                _logger = logger;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(message: "Error while creating ImageDescriptionService", ex);
+                throw;
+            }
         }
         private readonly ConcurrentQueue<string> _filePaths = new ConcurrentQueue<string>();
 
@@ -46,51 +57,60 @@
                     catch (Exception ex)
                     {
                         // Handle exception (log it, etc.)
+                        _logger.LogError(ex.Message);
                         Console.WriteLine(ex.Message);
                     }
                 }
                 else
                 {
-                    await Task.Delay(1000, stoppingToken); // Delay to avoid busy-waiting
+                    await Task.Delay(5000, stoppingToken); // Delay to avoid busy-waiting
                 }
             }
         }
 
         private async Task ProcessImage(string filePath)
         {
-
-            ImageAnalysisClient client = new ImageAnalysisClient(
-                new Uri(_configuration["computerVisionEndpoint"]),
-                new AzureKeyCredential(_configuration["computerVisionAPIKey"]));
-
-            // Use a file stream to pass the image data to the analyze call
-            using FileStream stream = new FileStream(filePath,FileMode.Open, FileAccess.Read, FileShare.Read);
-
-            var plateId = Path.GetFileNameWithoutExtension(filePath);
-
-            ImageAnalysisResult result = client.Analyze(
-                BinaryData.FromStream(stream),
-                VisualFeatures.Caption);
-
-            // Display analysis results
-            // Get image captions
-            if (result.Caption.Text != null)
+            _logger.LogInformation($"Generating AI description for {filePath}");
+            try
             {
-                Console.WriteLine(" Caption:");
-                Console.WriteLine($"   \"{result.Caption.Text}\", Confidence {result.Caption.Confidence:0.00}\n");
+                ImageAnalysisClient client = new ImageAnalysisClient(
+            new Uri(_configuration["computerVisionEndpoint"]),
+            new AzureKeyCredential(_configuration["computerVisionAPIKey"]));
 
-                
+                // Use a file stream to pass the image data to the analyze call
+                using FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                // Update the Plate object
-                var plate = await _context.Plate.FindAsync(Guid.Parse(plateId));
-                if (plate != null)
+                var plateId = Path.GetFileNameWithoutExtension(filePath);
+
+                ImageAnalysisResult result = client.Analyze(
+                    BinaryData.FromStream(stream),
+                    VisualFeatures.Caption);
+
+                // Display analysis results
+                // Get image captions
+                if (result.Caption.Text != null)
                 {
-                    // Update plate properties as needed
-                    plate.Description = result.Caption.Text;
-                    _context.Update(plate);
-                    await _context.SaveChangesAsync();
-                }
+                    Console.WriteLine(" Caption:");
+                    Console.WriteLine($"   \"{result.Caption.Text}\", Confidence {result.Caption.Confidence:0.00}\n");
 
+
+
+                    // Update the Plate object
+                    var plate = await _context.Plate.FindAsync(Guid.Parse(plateId));
+                    if (plate != null)
+                    {
+                        // Update plate properties as needed
+                        plate.Description = result.Caption.Text;
+                        _context.Update(plate);
+                        await _context.SaveChangesAsync();
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+
+                _logger.LogError(ex, "AI ERRORXXXXXXXXXXXXXXXX");
             }
 
             //return Task.CompletedTask;

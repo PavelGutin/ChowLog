@@ -4,6 +4,7 @@ using AllYourPlates.WebMVC.DataAccess;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,38 @@ builder.Services.AddSingleton<ImageDescriptionService>();
 
 builder.Services.AddHostedService(provider => provider.GetService<ThumbnailProcessingService>());
 builder.Services.AddHostedService(provider => provider.GetService<ImageDescriptionService>());
+
+
+//Add support to logging with SERILOG
+/*
+builder.Host.UseSerilog((context, configuration) =>
+{
+    //configuration.WriteTo.File("Logs/applogXXX-.txt").Enrich.WithEnvironmentName().Enrich.WithProperty("Application", "AllYourPlates");
+    configuration
+    .Enrich.WithEnvironmentName()
+    .Enrich.WithProperty("Application", "AllYourPlates")
+    .WriteTo.File("Logs/applogZZZ-.txt");
+    //configuration.Enrich.WithEnvironmentName();
+    //configuration.Enrich.FromLogContext();
+    //configuration.Enrich.WithExceptionStackTraceHash();
+    //configuration.Enrich.WithProperty("Application", "AllYourPlates");
+    //configuration.Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
+});/*/
+
+
+
+//var mt = "{LogLevel:u1}|{SourceContext}|{Message:l}|{Properties}{NewLine}{Exception}";
+
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration
+    .Enrich.WithEnvironmentName()
+    .Enrich.WithProperty("Application", "AllYourPlates")
+    .WriteTo.File("Logs/applogZZZ-.txt");
+    //.WriteTo.File("Logs/applogZZZ-.txt", outputTemplate: mt);
+});
+
+
 
 var app = builder.Build();
 
@@ -77,6 +110,8 @@ app.Use(async (context, next) =>
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseSerilogRequestLogging();
 
 app.UseRouting();
 

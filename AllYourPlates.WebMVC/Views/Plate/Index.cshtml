@@ -28,6 +28,10 @@
                              data-img-url="@Url.Content($"~/plates/{plate.PlateId}.jpeg")"
                              data-img-alt="@plate.Description"
                              style="cursor: pointer;">
+
+                        <div class="card-img-overlay d-flex align-items-end p-0">
+                            <p class="card-text w-100 bg-white bg-opacity-75 text-dark text-center p-2 m-0 fs-4">@plate.Description</p>
+                        </div>
                     </div>
                 </div>
             }

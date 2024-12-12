@@ -11,3 +11,7 @@ For development, the secrets are stored in the user secrets store.
 dotnet user-secrets set "computerVisionAPIKey" "API KEY"
 dotnet user-secrets set "computerVisionEndpoint" "API ENDPOING"
 ```
+
+TODO:
+Fix the mess with serilog
+ - Test to make sure it works everywhere

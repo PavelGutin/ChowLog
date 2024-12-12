@@ -20,12 +20,14 @@ namespace AllYourPlates.WebMVC.Controllers
         private readonly ThumbnailProcessingService _thumbnailService;
         private readonly ImageDescriptionService _imageDescriptionService;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<ThumbnailProcessingService> _logger;
 
         public PlateController(ApplicationDbContext context, 
             UserManager<IdentityUser> userManager, 
             ThumbnailProcessingService thumbnailService,
             IConfiguration configuration,
-            ImageDescriptionService imageDescriptionService
+            ImageDescriptionService imageDescriptionService,
+             ILogger<ThumbnailProcessingService> logger
             )
         {
             _context = context;
@@ -33,6 +35,7 @@ namespace AllYourPlates.WebMVC.Controllers
             _thumbnailService = thumbnailService;
             _configuration = configuration;
             _imageDescriptionService = imageDescriptionService;
+            _logger = logger;
         }
 
         // GET: Plates
@@ -50,6 +53,8 @@ namespace AllYourPlates.WebMVC.Controllers
                 })
                 .ToListAsync();
 
+            _logger.LogInformation("TEST INFORMATION FROM INDEX");
+            _logger.LogError("TEST ERRROR FROM INDEX");
             return View(plates);
         }
 

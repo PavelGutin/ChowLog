@@ -10,13 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="wwwroot\plates\**" />
-    <Content Remove="wwwroot\plates\**" />
-    <EmbeddedResource Remove="wwwroot\plates\**" />
-    <None Remove="wwwroot\plates\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Remove="Data\ApplicationDbContext.cs" />
     <Compile Remove="Models\Plate.cs" />
   </ItemGroup>
@@ -34,12 +27,20 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.6" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageReference Include="Serilog.Enrichers.ExceptionStackTraceHash" Version="1.3.0" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AllYourPlates.DataAccess\AllYourPlates.DataAccess.csproj" />
     <ProjectReference Include="..\AllYourPlates.Services\AllYourPlates.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\plates\" />
   </ItemGroup>
 
 </Project>
