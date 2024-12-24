@@ -31,5 +31,5 @@ RUN dotnet publish "./AllYourPlates.WebMVC.csproj" -c $BUILD_CONFIGURATION -o /a
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY --from=build /src/AllYourPlates.WebMVC/Migrations ./Migrations #TODO: this should not be necessary 
+COPY --from=build /src/AllYourPlates.WebMVC/Migrations ./Migrations
 ENTRYPOINT ["dotnet", "AllYourPlates.WebMVC.dll"]
