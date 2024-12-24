@@ -14,6 +14,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj", "AllYourPlates.WebMVC/"]
 COPY ["AllYourPlates.DataAccess/AllYourPlates.DataAccess.csproj", "AllYourPlates.DataAccess/"]
+COPY ["AllYourPlates.Hubs/AllYourPlates.Hubs.csproj", "AllYourPlates.Hubs/"]
 COPY ["AllYourPlates.Models/AllYourPlates.Models.csproj", "AllYourPlates.Models/"]
 COPY ["AllYourPlates.Services/AllYourPlates.Services.csproj", "AllYourPlates.Services/"]
 RUN dotnet restore "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
@@ -31,5 +32,5 @@ RUN dotnet publish "./AllYourPlates.WebMVC.csproj" -c $BUILD_CONFIGURATION -o /a
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY --from=build /src/AllYourPlates.WebMVC/Migrations ./Migrations #TODO: this should not be necessary 
+#COPY --from=build /src/AllYourPlates.WebMVC/Migrations ./Migrations 
 ENTRYPOINT ["dotnet", "AllYourPlates.WebMVC.dll"]

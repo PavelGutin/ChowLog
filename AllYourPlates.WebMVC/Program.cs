@@ -8,13 +8,19 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//TODO: This doesn't seem right to me. I think it should be in the appsettings.json file that I push to the container. But, I spent two hours getting here, so I am leaving it be 
+//TODO: This doesn't seem right to me. I think it should be in the appsettings.json file that I push to the container.
+//      I spent two hours getting here, so I am leaving it be 
 var connectionString = Environment.GetEnvironmentVariable("DefaultConnection")
                        ?? builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//    options.UseSqlServer(connectionString));
+
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSignalR();
@@ -69,22 +75,24 @@ builder.Host.UseSerilog((context, configuration) =>
 
 var app = builder.Build();
 
-// Apply pending migrations if any, and ensure the database is created.
+
+// Apply migrations on startup
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-    // Get the applied migrations and pending migrations
-    var appliedMigrations = dbContext.Database.GetAppliedMigrations();
-    var pendingMigrations = dbContext.Database.GetPendingMigrations();
-
-    // Log the number of applied and pending migrations
-    Console.WriteLine($">>>>>>>>>>>>>>>>>>>>>Applied Migrations: {appliedMigrations.Count()}");
-    Console.WriteLine($">>>>>>>>>>>>>>>>>>>>>Pending Migrations: {pendingMigrations.Count()}");
-
-    // Apply any pending migrations
-    dbContext.Database.Migrate();
+    var services = scope.ServiceProvider;
+    try
+    {
+        var dbContext = services.GetRequiredService<ApplicationDbContext>();
+        //dbContext.Database.EnsureCreated(); // Ensures the database exists
+        dbContext.Database.Migrate();      // Applies any pending migrations
+    }
+    catch (Exception ex)
+    {
+        // Log the exception (use your preferred logging framework)
+        Console.WriteLine($"An error occurred while migrating the database: {ex.Message}");
+    }
 }
+
 
 
 // Configure the HTTP request pipeline.
