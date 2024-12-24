@@ -9,6 +9,4 @@ namespace AllYourPlates.Hubs
             await Clients.All.SendAsync("ReceiveMessage", message);
         }
     }
-
-
 }
