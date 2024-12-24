@@ -82,23 +82,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           file: 'AllYourPlates.WebMVC/Dockerfile'
-
-
-      # Make the image public
-      - name: Make the Docker image public
-        if: github.event_name != 'pull_request'
-        env:
-          REPO: ${{ github.repository }}
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          curl -X PATCH \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/users/${{ github.actor }}/packages/container/${IMAGE_NAME}/visibility
-            -d '{"visibility":"public"}'
-
-
+          visibility: public
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
