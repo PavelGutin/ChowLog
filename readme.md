@@ -12,6 +12,12 @@ dotnet user-secrets set "computerVisionAPIKey" "API KEY"
 dotnet user-secrets set "computerVisionEndpoint" "API ENDPOING"
 ```
 
+To run the application
+
+```powershell
+docker run -p 8181:8080 --name allyourplates ghcr.io/pavelgutin/allyourplates:master
+```
+
 TODO:
 Fix the mess with serilog
  - Test to make sure it works everywhere
