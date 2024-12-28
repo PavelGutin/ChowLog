@@ -1,4 +1,4 @@
-﻿@model IEnumerable<AllYourPlates.WebMVC.ViewModels.GroupedPlatesViewModel>
+﻿@model IEnumerable<AllYourPlates.WebMVC.ViewModels.PlateViewModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -11,23 +11,33 @@
 </p>
 
 <div class="container mt-4">
-    @foreach (var group in Model)
+    @foreach (var group in Model
+    .GroupBy(p => p.Timestamp.Date)
+    .Select(g => new
+    {
+       Date = g.Key,
+       Plates = g.ToList()
+    }))
     {
         <h2 class="mb-3">@group.Date.ToString("MMMM d, yyyy")</h2>
         <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+
             @foreach (var plate in group.Plates)
             {
                 <div class="col">
-                    <div class="card h-100">
-                        <img src="~/plates/@(plate.PlateId)_thmb.jpeg"
+                    <div class="card h-100"
+                         data-bs-toggle="modal"
+                         data-bs-target="#imageModal"
+                         data-plate-card-id="@plate.PlateId"
+                         data-img-url="@Url.Content($"~/plates/{plate.PlateId}.jpeg")"
+                         data-img-alt="@plate.Description"
+                         data-plate-id="@plate.PlateId"
+                         style="cursor: pointer;">
+
+                        <img src="@(plate.Thumbnail)"
+                             id="plate_img_@(plate.PlateId)"
                              alt="@plate.Description"
-                             class="card-img-top"
-                             data-bs-toggle="modal"
-                             data-bs-target="#imageModal"
-                             data-plate-id="@plate.PlateId"
-                             data-img-url="@Url.Content($"~/plates/{plate.PlateId}.jpeg")"
-                             data-img-alt="@plate.Description"
-                             style="cursor: pointer;">
+                             class="card-img-top">
 
                         <div class="card-img-overlay d-flex align-items-end p-0">
                             <p class="card-text w-100 bg-white bg-opacity-75 text-dark text-center p-2 m-0 fs-4">@plate.Description</p>
@@ -63,31 +73,50 @@
     </div>
 </div>
 
-@section Scripts {  
-   <script>  
-       var imageModal = document.getElementById('imageModal')  
-       imageModal.addEventListener('show.bs.modal', function (event) {  
-           var button = event.relatedTarget  
-           var imgUrl = button.getAttribute('data-img-url')  
-           var imgAlt = button.getAttribute('data-img-alt')  
-           var plateId = button.getAttribute('data-plate-id')  
-           var modalImage = imageModal.querySelector('#modalImage')  
-           modalImage.src = imgUrl  
-           modalImage.alt = imgAlt  
+@section Scripts {
+    <script>
+        var imageModal = document.getElementById('imageModal')
+        imageModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget
+            var imgUrl = button.getAttribute('data-img-url')
+            var imgAlt = button.getAttribute('data-img-alt')
+            var plateId = button.getAttribute('data-plate-id')
+            var modalImage = imageModal.querySelector('#modalImage')
+            modalImage.src = imgUrl
+            modalImage.alt = imgAlt
 
-           var imgDesc = imageModal.querySelector('#imgDesc')  
-           imgDesc.innerHTML = imgAlt;  
+            var imgDesc = imageModal.querySelector('#imgDesc')
+            imgDesc.innerHTML = imgAlt;
 
-           var editButton = imageModal.querySelector('#editButton')  
-           var detailsButton = imageModal.querySelector('#detailsButton')  
-           var deleteButton = imageModal.querySelector('#deleteButton')  
+            var editButton = imageModal.querySelector('#editButton')
+            var detailsButton = imageModal.querySelector('#detailsButton')
+            var deleteButton = imageModal.querySelector('#deleteButton')
 
-           var baseUrl = '@Url.Action("", "Plate")';  
+            var baseUrl = '@Url.Action("", "Plate")';
 
-           editButton.href = `${baseUrl}/Edit/${plateId}`;  
-           detailsButton.href = `${baseUrl}/Details/${plateId}`;  
-           deleteButton.href = `${baseUrl}/Delete/${plateId}`;  
+            editButton.href = `${baseUrl}/Edit/${plateId}`;
+            detailsButton.href = `${baseUrl}/Details/${plateId}`;
+            deleteButton.href = `${baseUrl}/Delete/${plateId}`;
+        })
 
-       })  
-   </script>  
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub") // URL to your SignalR hub
+            .build();
+
+        connection.on("PlateProcessed", function (message) {
+            //alert(message);
+            var plateImage = document.getElementById('plate_img_' + message)
+            //alert(plateImage);
+            plateImage.src = "/plates/" + message + "_thmb.jpeg";
+            //const li = document.createElement("li");
+            //li.textContent = message;
+            //const messageList = document.getElementById("messageList");
+            //messageList.appendChild(li);
+            //alert(message);
+        });
+
+        connection.start().catch(function (err) {
+            console.error("Error while starting connection: " + err);
+        });
+    </script>
 }

@@ -7,6 +7,7 @@ using MetadataExtractor.Formats.Exif;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 
@@ -43,18 +44,31 @@ namespace AllYourPlates.WebMVC.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
-            var plates = await _context.Plate
+            var plates = new List<PlateViewModel>();
+            
+            plates.AddRange(await _context.Plate
                 .Where(p => p.User == user)
-                .GroupBy(p => p.Timestamp.Date)
-                .Select(g => new GroupedPlatesViewModel
+                .Select(p => new PlateViewModel
                 {
-                    Date = g.Key,
-                    Plates = g.ToList()
+                    PlateId = p.PlateId,
+                    Timestamp = p.Timestamp,
+                    Thumbnail = "/plates/" + p.PlateId.ToString() + "_thmb.jpeg", //this needs to be abstracted out
+                    Description = p.Description
                 })
-                .ToListAsync();
+                .ToListAsync());
 
-            _logger.LogInformation("TEST INFORMATION FROM INDEX");
-            _logger.LogError("TEST ERRROR FROM INDEX");
+
+            if (TempData["NewPlates"] != null && TempData["NewPlates"] is string newPlatesJson)
+            {
+                var newPlates = JsonConvert.DeserializeObject<List<Plate>>(newPlatesJson);
+                foreach(var plate in newPlates)
+                {
+                    var p = plates.Single(p => p.PlateId == plate.PlateId);
+                    p.Description = "loading...";
+                    p.Thumbnail = "/img/plate_placeholder.png";
+                }
+            }
+
             return View(plates);
         }
 
@@ -79,7 +93,7 @@ namespace AllYourPlates.WebMVC.Controllers
         // GET: Plates/Create
         public IActionResult Create()
         {
-            return View(new PlateViewModel()
+            return View(new CreatePlateViewModel()
             {
                 Timestamp = DateTime.Now
             }
@@ -90,9 +104,10 @@ namespace AllYourPlates.WebMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PlateId,Timestamp,Description,PlateFiles")] PlateViewModel plateVM)
+        public async Task<IActionResult> Create([Bind("PlateId,Timestamp,Description,PlateFiles")] CreatePlateViewModel plateVM)
         {
             var user = await _userManager.GetUserAsync(User);
+            var newPlates = new List<Plate>();
 
             if (plateVM.PlateFiles != null && plateVM.PlateFiles.Count > 0)
             {
@@ -150,12 +165,14 @@ namespace AllYourPlates.WebMVC.Controllers
                     {
                         _context.Add(plate);
                         await _context.SaveChangesAsync();
+                        newPlates.Add(plate);
                     }
                 }
             }
 
             if (ModelState.IsValid)
             {
+                TempData["NewPlates"] = JsonConvert.SerializeObject(newPlates);
                 return RedirectToAction(nameof(Index));
             }
 

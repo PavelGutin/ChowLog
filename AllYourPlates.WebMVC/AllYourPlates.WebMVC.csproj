@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <Folder Include="Data\Migrations\" />
+    <Folder Include="wwwroot\img\" />
     <Folder Include="wwwroot\plates\" />
   </ItemGroup>
 

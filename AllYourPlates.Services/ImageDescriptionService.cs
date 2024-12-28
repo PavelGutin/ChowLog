@@ -80,6 +80,7 @@
             NotifyClients("Starting to process image " + filePath);
 
             _logger.LogInformation($"Generating AI description for {filePath}");
+            var plateId = Path.GetFileNameWithoutExtension(filePath);
             try
             {
                 ImageAnalysisClient client = new ImageAnalysisClient(
@@ -89,7 +90,7 @@
                 // Use a file stream to pass the image data to the analyze call
                 using FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                var plateId = Path.GetFileNameWithoutExtension(filePath);
+                
 
                 ImageAnalysisResult result = client.Analyze(
                     BinaryData.FromStream(stream),
@@ -122,6 +123,7 @@
                 _logger.LogError(ex, "AI ERRORXXXXXXXXXXXXXXXX");
             }
             NotifyClients("Done processing image " + filePath);
+            NotifyClients("PlateProcessed", plateId);
 
             //return Task.CompletedTask;
         }
@@ -130,6 +132,10 @@
         {
             // Notify all clients connected to the NotificationHub
             await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
+        }
+        public async Task NotifyClients(string method, string message)
+        {
+            await _hubContext.Clients.All.SendAsync(method, message);
         }
     }
 }
