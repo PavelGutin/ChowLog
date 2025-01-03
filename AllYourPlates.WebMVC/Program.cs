@@ -1,7 +1,6 @@
 using AllYourPlates.Hubs;
 using AllYourPlates.Services;
 using AllYourPlates.Utilities;
-using AllYourPlates.WebMVC;
 using AllYourPlates.WebMVC.DataAccess;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -10,8 +9,7 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//TODO: This doesn't seem right to me. I think it should be in the appsettings.json file that I push to the container.
-//      I spent two hours getting here, so I am leaving it be 
+//TODO remove hardcoded variable name
 var connectionString = Environment.GetEnvironmentVariable("DefaultConnection")
                        ?? builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
