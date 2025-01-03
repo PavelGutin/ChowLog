@@ -40,6 +40,7 @@
     <ProjectReference Include="..\AllYourPlates.DataAccess\AllYourPlates.DataAccess.csproj" />
     <ProjectReference Include="..\AllYourPlates.Hubs\AllYourPlates.Hubs.csproj" />
     <ProjectReference Include="..\AllYourPlates.Services\AllYourPlates.Services.csproj" />
+    <ProjectReference Include="..\AllYourPlates.Utilities\AllYourPlates.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

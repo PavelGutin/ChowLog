@@ -23,3 +23,5 @@ TODO:
 - Improve serilog logging
 - Add unit tests
 - Figure out database location for persistence 
+- Abstract out file storage
+- Abstract out computer vision for development to stop hitting the paid API

@@ -20,6 +20,8 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AllYourPlates.Hubs", "AllYourPlates.Hubs\AllYourPlates.Hubs.csproj", "{05BFB656-0B07-4AF7-91A4-2165EE9A407E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AllYourPlates.Utilities", "AllYourPlates.Utilities\AllYourPlates.Utilities.csproj", "{FC132E1C-6A95-4973-9E5C-4599410ADA61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{05BFB656-0B07-4AF7-91A4-2165EE9A407E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05BFB656-0B07-4AF7-91A4-2165EE9A407E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05BFB656-0B07-4AF7-91A4-2165EE9A407E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC132E1C-6A95-4973-9E5C-4599410ADA61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC132E1C-6A95-4973-9E5C-4599410ADA61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC132E1C-6A95-4973-9E5C-4599410ADA61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC132E1C-6A95-4973-9E5C-4599410ADA61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -40,7 +40,8 @@
                              class="card-img-top">
 
                         <div class="card-img-overlay d-flex align-items-end p-0">
-                            <p class="card-text w-100 bg-white bg-opacity-75 text-dark text-center p-2 m-0 fs-4">@plate.Description</p>
+                            <p id="plate_description_@(plate.PlateId)"
+                               class="card-text w-100 bg-white bg-opacity-75 text-dark text-center p-2 m-0 fs-4">@plate.Description</p>
                         </div>
                     </div>
                 </div>
@@ -103,16 +104,16 @@
             .withUrl("/notificationHub") // URL to your SignalR hub
             .build();
 
-        connection.on("PlateProcessed", function (message) {
-            //alert(message);
-            var plateImage = document.getElementById('plate_img_' + message)
-            //alert(plateImage);
-            plateImage.src = "/plates/" + message + "_thmb.jpeg";
-            //const li = document.createElement("li");
-            //li.textContent = message;
-            //const messageList = document.getElementById("messageList");
-            //messageList.appendChild(li);
-            //alert(message);
+        connection.on("ThumbnailGenerated", function (plateId) {
+            var plateImage = document.getElementById('plate_img_' + plateId)
+            plateImage.src = "/plates/" + plateId + "_thmb.jpeg";
+        });
+
+        //TODO clean this up to get rid of hardcoded array indexes
+        connection.on("DescriptionGenerated", function (message) {
+            alert("DESC" + message[0] + " - " + message[1]);
+            var plateImage = document.getElementById('plate_description_' + message[0])
+            plateImage.innerHTML = message[1];
         });
 
         connection.start().catch(function (err) {

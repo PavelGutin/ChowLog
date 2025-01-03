@@ -5,7 +5,6 @@
     using Azure;
     using Azure.AI.Vision.ImageAnalysis;
     using Microsoft.AspNetCore.SignalR;
-    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -114,6 +113,7 @@
                         _context.Update(plate);
                         await _context.SaveChangesAsync();
                     }
+                    NotifyClients("DescriptionGenerated", plateId, plate.Description);
 
                 }
             }
@@ -122,20 +122,19 @@
 
                 _logger.LogError(ex, "AI ERRORXXXXXXXXXXXXXXXX");
             }
-            NotifyClients("Done processing image " + filePath);
-            NotifyClients("PlateProcessed", plateId);
+            
 
             //return Task.CompletedTask;
         }
 
-        public async Task NotifyClients(string message)
+        //public async Task NotifyClients(string message)
+        //{
+        //    // Notify all clients connected to the NotificationHub
+        //    await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
+        //}
+        public async Task NotifyClients(string method, params object[] args)
         {
-            // Notify all clients connected to the NotificationHub
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
-        }
-        public async Task NotifyClients(string method, string message)
-        {
-            await _hubContext.Clients.All.SendAsync(method, message);
+            await _hubContext.Clients.All.SendAsync(method, args);
         }
     }
 }

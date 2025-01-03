@@ -156,7 +156,7 @@ namespace AllYourPlates.WebMVC.Controllers
                         }
 
                         //TODO: Figure out what to pass to these services. The current approach is hacky and will just grab the GUID from the filename
-                        _thumbnailService.EnqueueFile(filePath);
+                        _thumbnailService.EnqueueFile(plate.PlateId);
                         _imageDescriptionService.EnqueueFile(filePath);
 
                     }

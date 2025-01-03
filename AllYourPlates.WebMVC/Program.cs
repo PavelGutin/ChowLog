@@ -1,5 +1,7 @@
 using AllYourPlates.Hubs;
 using AllYourPlates.Services;
+using AllYourPlates.Utilities;
+using AllYourPlates.WebMVC;
 using AllYourPlates.WebMVC.DataAccess;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -30,6 +32,8 @@ builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 524288000; // 500 MB
 });
 
+builder.Services.Configure<ApplicationOptions>(
+    builder.Configuration.GetSection(nameof(ApplicationOptions)));
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -41,26 +45,6 @@ builder.Services.AddSingleton<ImageDescriptionService>();
 builder.Services.AddHostedService(provider => provider.GetService<ThumbnailProcessingService>());
 builder.Services.AddHostedService(provider => provider.GetService<ImageDescriptionService>());
 
-
-//Add support to logging with SERILOG
-/*
-builder.Host.UseSerilog((context, configuration) =>
-{
-    //configuration.WriteTo.File("Logs/applogXXX-.txt").Enrich.WithEnvironmentName().Enrich.WithProperty("Application", "AllYourPlates");
-    configuration
-    .Enrich.WithEnvironmentName()
-    .Enrich.WithProperty("Application", "AllYourPlates")
-    .WriteTo.File("Logs/applogZZZ-.txt");
-    //configuration.Enrich.WithEnvironmentName();
-    //configuration.Enrich.FromLogContext();
-    //configuration.Enrich.WithExceptionStackTraceHash();
-    //configuration.Enrich.WithProperty("Application", "AllYourPlates");
-    //configuration.Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
-});/*/
-
-
-
-//var mt = "{LogLevel:u1}|{SourceContext}|{Message:l}|{Properties}{NewLine}{Exception}";
 
 builder.Host.UseSerilog((context, configuration) =>
 {
