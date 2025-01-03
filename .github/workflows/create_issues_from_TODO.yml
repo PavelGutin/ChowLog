@@ -1,0 +1,28 @@
+name: Create Issues from TODOs
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  todo-to-issue:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Run the TODO to Issue Action
+      - name: Convert TODOs to GitHub Issues
+        uses: alstr/todo-to-issue-action@v5.1.10
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: customize the search keyword, defaults to 'TODO'
+          keyword: 'TODO'
+          # Optional: label for the created issues
+          issue-label: 'todo'
+          # Optional: close old TODO issues no longer in the codebase
+          close-issues: true
