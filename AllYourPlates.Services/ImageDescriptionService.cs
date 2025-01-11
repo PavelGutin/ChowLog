@@ -1,19 +1,19 @@
-﻿namespace AllYourPlates.Services
+﻿using AllYourPlates.Hubs;
+using AllYourPlates.Utilities;
+using AllYourPlates.WebMVC.DataAccess;
+using Azure;
+using Azure.AI.Vision.ImageAnalysis;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
+
+
+namespace AllYourPlates.Services
 {
-    using AllYourPlates.Hubs;
-    using AllYourPlates.WebMVC.DataAccess;
-    using Azure;
-    using Azure.AI.Vision.ImageAnalysis;
-    using Microsoft.AspNetCore.SignalR;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Hosting;
-    using Microsoft.Extensions.Logging;
-    using System;
-    using System.Collections.Concurrent;
-    using System.IO;
-    using System.Threading;
-    using System.Threading.Tasks;
 
     public class ImageDescriptionService : BackgroundService
     {
@@ -22,11 +22,15 @@
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ThumbnailProcessingService> _logger;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly ConcurrentQueue<Guid> _filePaths = new ConcurrentQueue<Guid>();
+        private readonly IOptions<ApplicationOptions> _applicationOptions;
+        private readonly DirectoryInfo _imagesRoot;
 
-        public ImageDescriptionService(IServiceProvider serviceProvider, 
-            IConfiguration configuration, 
-            ILogger<ThumbnailProcessingService> logger, 
-            IHubContext<NotificationHub> hubContext)
+        public ImageDescriptionService(IServiceProvider serviceProvider,
+            IConfiguration configuration,
+            ILogger<ThumbnailProcessingService> logger,
+            IHubContext<NotificationHub> hubContext,
+            IOptions<ApplicationOptions> applicationOptions)
         {
             try
             {
@@ -36,6 +40,8 @@
                 _context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 _logger = logger;
                 _hubContext = hubContext;
+                _applicationOptions = applicationOptions;
+                _imagesRoot = new DirectoryInfo(_applicationOptions.Value.ImagesRoot);
             }
             catch (Exception ex)
             {
@@ -43,11 +49,11 @@
                 throw;
             }
         }
-        private readonly ConcurrentQueue<string> _filePaths = new ConcurrentQueue<string>();
 
-        public void EnqueueFile(string filePath)
+
+        public void EnqueueFile(Guid plateId)
         {
-            _filePaths.Enqueue(filePath);
+            _filePaths.Enqueue(plateId);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -74,22 +80,29 @@
             }
         }
 
-        private async Task ProcessImage(string filePath)
+        private async Task ProcessImage(Guid plateId)
         {
-            NotifyClients("Starting to process image " + filePath);
+            NotifyClients("Starting to process image " + plateId);
 
-            _logger.LogInformation($"Generating AI description for {filePath}");
-            var plateId = Path.GetFileNameWithoutExtension(filePath);
+            _logger.LogInformation($"Generating AI description for {plateId}");
+
             try
             {
                 ImageAnalysisClient client = new ImageAnalysisClient(
             new Uri(_configuration["computerVisionEndpoint"]),
             new AzureKeyCredential(_configuration["computerVisionAPIKey"]));
 
-                // Use a file stream to pass the image data to the analyze call
-                using FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                
+                var platePath = Path.ChangeExtension(
+                    Path.Combine(_imagesRoot.FullName, plateId.ToString()),
+                    "jpeg");
+
+                // Use a file stream to pass the image data to the analyze call
+                using FileStream stream = new FileStream(platePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+                //var result = client.Analyze(
+                //    BinaryData.FromStream(stream),
+                //    VisualFeatures.Caption);
 
                 ImageAnalysisResult result = client.Analyze(
                     BinaryData.FromStream(stream),
@@ -105,7 +118,7 @@
 
 
                     // Update the Plate object
-                    var plate = await _context.Plate.FindAsync(Guid.Parse(plateId));
+                    var plate = await _context.Plate.FindAsync(plateId);
                     if (plate != null)
                     {
                         // Update plate properties as needed
@@ -122,16 +135,9 @@
 
                 _logger.LogError(ex, "AI ERRORXXXXXXXXXXXXXXXX");
             }
-            
-
             //return Task.CompletedTask;
         }
 
-        //public async Task NotifyClients(string message)
-        //{
-        //    // Notify all clients connected to the NotificationHub
-        //    await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
-        //}
         public async Task NotifyClients(string method, params object[] args)
         {
             await _hubContext.Clients.All.SendAsync(method, args);

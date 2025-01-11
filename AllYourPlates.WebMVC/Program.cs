@@ -25,6 +25,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSignalR();
 
+//TODO this is very dirty, need to figure out a cleaner way to do this, but that's a front end problem which isn't what I am trying to learn
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 524288000; // 500 MB
@@ -37,11 +38,26 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+
+//TODO really dig into this to understand how it's working
 builder.Services.AddSingleton<ThumbnailProcessingService>();
 builder.Services.AddSingleton<ImageDescriptionService>();
+builder.Services.AddSingleton<PlateMetadataService>();
+
+builder.Services.AddScoped<IPlateService, PlateService>();
+builder.Services.AddScoped<IPlateRepsitory, PlateLocalDBRepository>();
+builder.Services.AddScoped<IPlateImageStorage, PlateLocalImageStorage>();
+
+
 
 builder.Services.AddHostedService(provider => provider.GetService<ThumbnailProcessingService>());
 builder.Services.AddHostedService(provider => provider.GetService<ImageDescriptionService>());
+builder.Services.AddHostedService(provider => provider.GetService<PlateMetadataService>());
+
+//THIS MAY NOT WORK <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//builder.Services.AddHostedService<ThumbnailProcessingService>();
+//builder.Services.AddHostedService<ImageDescriptionService>();
+//builder.Services.AddHostedService<PlateMetadataService>();
 
 
 builder.Host.UseSerilog((context, configuration) =>

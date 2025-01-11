@@ -101,7 +101,7 @@
         })
 
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/notificationHub") // URL to your SignalR hub
+            .withUrl("/notificationHub") 
             .build();
 
         connection.on("ThumbnailGenerated", function (plateId) {
@@ -111,10 +111,15 @@
 
         //TODO clean this up to get rid of hardcoded array indexes
         connection.on("DescriptionGenerated", function (message) {
-            alert("DESC" + message[0] + " - " + message[1]);
             var plateImage = document.getElementById('plate_description_' + message[0])
             plateImage.innerHTML = message[1];
         });
+
+        connection.on("MetadataExtracted", function (plateId) {
+            alert("Metadata extracted for plate " + plateId);
+        });
+
+        
 
         connection.start().catch(function (err) {
             console.error("Error while starting connection: " + err);
