@@ -14,12 +14,9 @@ var connectionString = Environment.GetEnvironmentVariable("DefaultConnection")
                        ?? builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//    options.UseSqlServer(connectionString));
-
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -39,25 +36,25 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddControllersWithViews();
 
 
-//TODO really dig into this to understand how it's working
-builder.Services.AddSingleton<ThumbnailProcessingService>();
-builder.Services.AddSingleton<ImageDescriptionService>();
-builder.Services.AddSingleton<PlateMetadataService>();
+
 
 builder.Services.AddScoped<IPlateService, PlateService>();
 builder.Services.AddScoped<IPlateRepsitory, PlateLocalDBRepository>();
 builder.Services.AddScoped<IPlateImageStorage, PlateLocalImageStorage>();
 
+//TODO really dig into this to understand how it's working
+builder.Services.AddSingleton<ThumbnailProcessingService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<ThumbnailProcessingService>());
+
+builder.Services.AddSingleton<ImageDescriptionService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<ImageDescriptionService>());
+
+builder.Services.AddSingleton<PlateMetadataService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<PlateMetadataService>());
 
 
-builder.Services.AddHostedService(provider => provider.GetService<ThumbnailProcessingService>());
-builder.Services.AddHostedService(provider => provider.GetService<ImageDescriptionService>());
-builder.Services.AddHostedService(provider => provider.GetService<PlateMetadataService>());
 
-//THIS MAY NOT WORK <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-//builder.Services.AddHostedService<ThumbnailProcessingService>();
-//builder.Services.AddHostedService<ImageDescriptionService>();
-//builder.Services.AddHostedService<PlateMetadataService>();
+
 
 
 builder.Host.UseSerilog((context, configuration) =>

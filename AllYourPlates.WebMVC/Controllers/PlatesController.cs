@@ -13,47 +13,33 @@ namespace AllYourPlates.WebMVC.Controllers
 {
     public class PlateController : Controller
     {
-        //private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly ThumbnailProcessingService _thumbnailService;
-        private readonly ImageDescriptionService _imageDescriptionService;
         private readonly IConfiguration _configuration;
-        private readonly ILogger<ThumbnailProcessingService> _logger;
         private readonly IPlateService _plateService;
 
         public PlateController(ApplicationDbContext context,
             UserManager<IdentityUser> userManager,
             IPlateService plateService,
-            IConfiguration configuration,
-            ILogger<ThumbnailProcessingService> logger
+            IConfiguration configuration
             )
         {
-            //_context = context;
             _userManager = userManager;
             _plateService = plateService;
-
             _configuration = configuration;
-
-            _logger = logger;
         }
 
         // GET: Plates
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
-
-            //TODO bad name
             var data = await _plateService.GetAllPlatesAsync(user);
             var plates = new List<PlateViewModel>();
-
-            ;
-
 
             plates.AddRange(data.Select(p => new PlateViewModel
             {
                 PlateId = p.PlateId,
                 Timestamp = p.Timestamp,
-                Thumbnail = "/plates/" + p.PlateId.ToString() + "_thmb.jpeg", //this needs to be abstracted out
+                Thumbnail = "/plates/" + p.PlateId.ToString() + "_thmb.jpeg", //TODO this needs to be abstracted out
                 Description = p.Description
             }));
 
@@ -68,7 +54,6 @@ namespace AllYourPlates.WebMVC.Controllers
                     p.Thumbnail = "/img/plate_placeholder.png";
                 }
             }
-
             return View(plates);
         }
 
@@ -95,12 +80,9 @@ namespace AllYourPlates.WebMVC.Controllers
         // GET: Plates/Create
         public IActionResult Create()
         {
-            return View(new CreatePlateViewModel()
-            {
-
-            }
-            );
+            return View(new CreatePlateViewModel(){});
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PlateId,Timestamp,Description,PlateFiles")] CreatePlateViewModel plateVM)
@@ -223,15 +205,6 @@ namespace AllYourPlates.WebMVC.Controllers
             //return _context.Plate.Any(e => e.PlateId == id);
             throw new NotImplementedException();
         }
-        //public void ConfigureServices(IServiceCollection services)
-        //{
-        //    services.Configure<FormOptions>(options =>
-        //    {
-        //        options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100 MB
-        //    });
-
-        //    // Other service configurations...
-        //}
     }
 }
 
