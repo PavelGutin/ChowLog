@@ -105,18 +105,20 @@
             .build();
 
         connection.on("ThumbnailGenerated", function (plateId) {
+            console.info("Thumbnail generated for plate ${plateId}");
             var plateImage = document.getElementById('plate_img_' + plateId)
             plateImage.src = "/plates/" + plateId + "_thmb.jpeg";
         });
 
         //TODO clean this up to get rid of hardcoded array indexes
         connection.on("DescriptionGenerated", function (message) {
+            console.info("Description generated for plate ${plateId}");
             var plateImage = document.getElementById('plate_description_' + message[0])
             plateImage.innerHTML = message[1];
         });
 
         connection.on("MetadataExtracted", function (plateId) {
-            alert("Metadata extracted for plate " + plateId);
+            console.info("Metadata extracted for plate ${plateId}");
         });
 
         

@@ -14,17 +14,20 @@ namespace AllYourPlates.WebMVC.Controllers
     public class PlateController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IPlateOrchestrator _plateOrchestrator;
         private readonly IConfiguration _configuration;
-        private readonly IPlateService _plateService;
+        //private readonly IPlateService _plateService;
 
         public PlateController(ApplicationDbContext context,
             UserManager<IdentityUser> userManager,
-            IPlateService plateService,
+            //IPlateService plateService,
+            IPlateOrchestrator plateOrchestrator,
             IConfiguration configuration
             )
         {
             _userManager = userManager;
-            _plateService = plateService;
+            //_plateService = plateService;
+            _plateOrchestrator = plateOrchestrator;
             _configuration = configuration;
         }
 
@@ -32,7 +35,8 @@ namespace AllYourPlates.WebMVC.Controllers
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
-            var data = await _plateService.GetAllPlatesAsync(user);
+            //var data = await _plateService.GetAllPlatesAsync(user);
+            var data = await _plateOrchestrator.GetAllPlatesAsync(user);
             var plates = new List<PlateViewModel>();
 
             plates.AddRange(data.Select(p => new PlateViewModel
@@ -99,7 +103,8 @@ namespace AllYourPlates.WebMVC.Controllers
                     File = file
                 }));
 
-                await _plateService.AddAsync(newPlates);
+                //await _plateService.AddAsync(newPlates);
+                await _plateOrchestrator.AddAsync(newPlates);
             }
 
             if (ModelState.IsValid)
@@ -175,7 +180,8 @@ namespace AllYourPlates.WebMVC.Controllers
                 return NotFound();
             }
 
-            var plate = await _plateService.GetPlateAsync((Guid) id);// .AddAsync(newPlates);
+            //var plate = await _plateService.GetPlateAsync((Guid) id);
+            var plate = await _plateOrchestrator.GetPlateAsync((Guid) id);
             //var plate = await _context.Plate
             //    .FirstOrDefaultAsync(m => m.PlateId == id);
             if (plate == null)
@@ -191,10 +197,12 @@ namespace AllYourPlates.WebMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var plate = await _plateService.GetPlateAsync(id);
+            //var plate = await _plateService.GetPlateAsync(id);
+            var plate = await _plateOrchestrator.GetPlateAsync(id);
             if (plate != null)
             {
-                await _plateService.DeletePlateAsync(id);
+                //await _plateService.DeletePlateAsync(id);
+                await _plateOrchestrator.DeletePlateAsync(id);
             }
             return RedirectToAction(nameof(Index));
         }

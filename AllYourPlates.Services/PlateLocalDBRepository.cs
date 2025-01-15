@@ -37,5 +37,22 @@ namespace AllYourPlates.Services
         {
             return await _dbContext.Plate.FirstOrDefaultAsync(p => p.PlateId == plate);
         }
+
+        public async Task UpdatePlateAsync(Plate plate)
+        {
+            // Ensure the Plate exists in the database
+            var existingPlate = await _dbContext.Plate.FirstOrDefaultAsync(p => p.PlateId == plate.PlateId);
+
+            if (existingPlate == null)
+            {
+                throw new KeyNotFoundException($"Plate with ID {plate.PlateId} not found.");
+            }
+
+            // Update the fields
+            _dbContext.Entry(existingPlate).CurrentValues.SetValues(plate);
+
+            // Save changes to the database
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

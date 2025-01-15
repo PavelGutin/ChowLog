@@ -7,10 +7,12 @@ namespace AllYourPlates.Services
 {
     public interface IPlateService
     {
-        Task AddAsync(IEnumerable<PlateServicePayload> platePayload);
+        Task AddAsync(Plate platePayload);
+        Task AddAsync(IEnumerable<Plate> plates);
         Task<IEnumerable<Plate>> GetAllPlatesAsync(IdentityUser user);
         Task<Plate> GetPlateAsync(Guid id);
         Task DeletePlateAsync(Guid id);
+        Task UpdatePlateAsync(Plate plate);
 
     }
 }

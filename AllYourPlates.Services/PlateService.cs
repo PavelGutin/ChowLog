@@ -1,46 +1,28 @@
-﻿using AllYourPlates.Services.Payloads;
-using AllYourPlates.WebMVC.Models;
+﻿using AllYourPlates.WebMVC.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace AllYourPlates.Services
 {
     public class PlateService : IPlateService
     {
-        private readonly ThumbnailProcessingService _thumbnailService;
-        private readonly ImageDescriptionService _imageDescriptionService;
-        private readonly PlateMetadataService _plateMetadataService;
-        private readonly IPlateImageStorage _plateImageStorage;
         private readonly IPlateRepsitory _plateRepository;
 
-        public PlateService(ThumbnailProcessingService thumbnailService,
-            ImageDescriptionService imageDescriptionService, 
-            PlateMetadataService plateMetadataService,
-            IPlateRepsitory plateRepository,
-            IPlateImageStorage plateImageStorage)
+        public PlateService(IPlateRepsitory plateRepository)
         {
-            _thumbnailService = thumbnailService;
-            _imageDescriptionService = imageDescriptionService;
             _plateRepository = plateRepository;
-            _plateImageStorage = plateImageStorage;
-            _plateMetadataService = plateMetadataService;
         }
 
-        public async Task AddAsync(IEnumerable<PlateServicePayload> plates)
+        public async Task AddAsync(IEnumerable<Plate> plates)
         {
-            foreach (var item in plates)
+            foreach (var plate in plates)
             {
-                var newPlate = new Plate 
-                {
-                    PlateId = item.PlateId,
-                    User = item.User
-                };
-
-                await _plateRepository.AddPlateAsync(newPlate);
-                _plateImageStorage.SaveImage(newPlate.PlateId, item.File);
-                _plateMetadataService.EnqueueFile(newPlate.PlateId);
-                _thumbnailService.EnqueueFile(newPlate.PlateId);
-                _imageDescriptionService.EnqueueFile(newPlate.PlateId);
+                await _plateRepository.AddPlateAsync(plate);
             }
+        }
+
+        public async Task AddAsync(Plate plate)
+        {
+            await _plateRepository.AddPlateAsync(plate);
         }
 
         public async Task DeletePlateAsync(Guid id)
@@ -56,6 +38,10 @@ namespace AllYourPlates.Services
         public async Task<Plate> GetPlateAsync(Guid id)
         {
             return await _plateRepository.GetPlateAsync(id);
+        }
+        public async Task UpdatePlateAsync(Plate plate)
+        {
+            await _plateRepository.UpdatePlateAsync(plate);
         }
     }
 }

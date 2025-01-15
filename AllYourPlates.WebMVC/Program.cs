@@ -1,3 +1,4 @@
+using AllYourPlates.DataAccess;
 using AllYourPlates.Hubs;
 using AllYourPlates.Services;
 using AllYourPlates.Utilities;
@@ -5,6 +6,7 @@ using AllYourPlates.WebMVC.DataAccess;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +21,24 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+
+
+
+// MongoDB connection configuration
+var mongoConnectionString = Environment.GetEnvironmentVariable("MongoDBConnection")
+                         ?? builder.Configuration.GetConnectionString("MongoDBConnection")
+                         ?? throw new InvalidOperationException("Connection string 'MongoDBConnection' not found.");
+
+var mongoDatabaseName = builder.Configuration.GetValue<string>("MongoDBDatabaseName")
+                         ?? throw new InvalidOperationException("MongoDB database name not found.");
+
+// Register MongoDB client
+builder.Services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(mongoConnectionString));
+
+// Register a custom MongoDB context
+builder.Services.AddSingleton<IMongoDbContext, MongoDbContext>(sp => new MongoDbContext(
+    sp.GetRequiredService<IMongoClient>(), mongoDatabaseName));
 
 builder.Services.AddSignalR();
 
@@ -39,7 +59,9 @@ builder.Services.AddControllersWithViews();
 
 
 builder.Services.AddScoped<IPlateService, PlateService>();
-builder.Services.AddScoped<IPlateRepsitory, PlateLocalDBRepository>();
+builder.Services.AddScoped<IPlateOrchestrator, PlateOrchestrator>();
+//builder.Services.AddScoped<IPlateRepsitory, PlateLocalDBRepository>();
+builder.Services.AddScoped<IPlateRepsitory, PlateMongoRepository>();
 builder.Services.AddScoped<IPlateImageStorage, PlateLocalImageStorage>();
 
 //TODO really dig into this to understand how it's working
@@ -51,9 +73,6 @@ builder.Services.AddHostedService(provider => provider.GetRequiredService<ImageD
 
 builder.Services.AddSingleton<PlateMetadataService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<PlateMetadataService>());
-
-
-
 
 
 

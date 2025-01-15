@@ -18,13 +18,14 @@ namespace AllYourPlates.Services
     public class ImageDescriptionService : BackgroundService
     {
         private readonly IConfiguration _configuration;
-        private readonly ApplicationDbContext _context;
+        //private readonly ApplicationDbContext _context;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ThumbnailProcessingService> _logger;
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly ConcurrentQueue<Guid> _filePaths = new ConcurrentQueue<Guid>();
         private readonly IOptions<ApplicationOptions> _applicationOptions;
         private readonly DirectoryInfo _imagesRoot;
+        private readonly IPlateService _plateService;
 
         public ImageDescriptionService(IServiceProvider serviceProvider,
             IConfiguration configuration,
@@ -37,11 +38,12 @@ namespace AllYourPlates.Services
                 _serviceProvider = serviceProvider;
                 _configuration = configuration;
                 var scope = _serviceProvider.CreateScope();
-                _context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                //_context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 _logger = logger;
                 _hubContext = hubContext;
                 _applicationOptions = applicationOptions;
                 _imagesRoot = new DirectoryInfo(_applicationOptions.Value.ImagesRoot);
+                _plateService = scope.ServiceProvider.GetRequiredService<IPlateService>();
             }
             catch (Exception ex)
             {
@@ -100,40 +102,24 @@ namespace AllYourPlates.Services
                 // Use a file stream to pass the image data to the analyze call
                 using FileStream stream = new FileStream(platePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                //var result = client.Analyze(
-                //    BinaryData.FromStream(stream),
-                //    VisualFeatures.Caption);
+                ImageAnalysisResult result = client.Analyze(BinaryData.FromStream(stream), VisualFeatures.Caption);
 
-                ImageAnalysisResult result = client.Analyze(
-                    BinaryData.FromStream(stream),
-                    VisualFeatures.Caption);
-
-                // Display analysis results
-                // Get image captions
                 if (result.Caption.Text != null)
                 {
-                    Console.WriteLine(" Caption:");
-                    Console.WriteLine($"   \"{result.Caption.Text}\", Confidence {result.Caption.Confidence:0.00}\n");
+                    var plate = await _plateService.GetPlateAsync(plateId);
 
-
-
-                    // Update the Plate object
-                    var plate = await _context.Plate.FindAsync(plateId);
                     if (plate != null)
                     {
-                        // Update plate properties as needed
                         plate.Description = result.Caption.Text;
-                        _context.Update(plate);
-                        await _context.SaveChangesAsync();
+                        await _plateService.UpdatePlateAsync(plate);
                     }
                     NotifyClients("DescriptionGenerated", plateId, plate.Description);
-
                 }
             }
             catch (Exception ex)
             {
 
-                _logger.LogError(ex, "AI ERRORXXXXXXXXXXXXXXXX");
+                _logger.LogError(ex, "AI error");
             }
             //return Task.CompletedTask;
         }

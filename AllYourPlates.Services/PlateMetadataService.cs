@@ -1,7 +1,6 @@
 ﻿using AllYourPlates.Common;
 using AllYourPlates.Hubs;
 using AllYourPlates.Utilities;
-using AllYourPlates.WebMVC.DataAccess;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using Microsoft.AspNetCore.SignalR;
@@ -24,8 +23,8 @@ namespace AllYourPlates.Services
         private readonly ILogger<ThumbnailProcessingService> _logger;
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly IOptions<ApplicationOptions> _applicationOptions;
-        private readonly ApplicationDbContext _context;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IPlateService _plateService;
 
         public PlateMetadataService(ILogger<ThumbnailProcessingService> logger,
             IHubContext<NotificationHub> hubContext,
@@ -39,8 +38,8 @@ namespace AllYourPlates.Services
             _configuration = configuration;
             _applicationOptions = applicationOptions;
             var scope = _serviceProvider.CreateScope();
-            _context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             _imagesRoot = new DirectoryInfo(_applicationOptions.Value.ImagesRoot);
+            _plateService = scope.ServiceProvider.GetRequiredService<IPlateService>();
         }
 
         public void EnqueueFile(Guid plateId)
@@ -87,18 +86,22 @@ namespace AllYourPlates.Services
             {
                 timeTaken = dateTaken.Value;
             }
-            
-            var plate = await _context.Plate.FindAsync(plateId);
+
+            var plate = await _plateService.GetPlateAsync(plateId);
+
             if (plate != null)
             {
-                // Update plate properties as needed
                 plate.Timestamp = timeTaken;
-                _context.Update(plate);
-                await _context.SaveChangesAsync();
+                await _plateService.UpdatePlateAsync(plate);
+            }
+            else
+            {
+                _logger.LogError("Plate not found");
+                throw new Exception("Plate not found while trying to update metadata");
             }
 
             NotifyClients("MetadataExtracted", plateId.ToString() + timeTaken.ToString());
-            //}
+
             return new PlateMetadata { TimeTaken = timeTaken };
         }
 
