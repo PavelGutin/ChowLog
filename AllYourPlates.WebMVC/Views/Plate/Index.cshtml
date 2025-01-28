@@ -117,11 +117,10 @@
             plateImage.innerHTML = message[1];
         });
 
+        //TODO fix the plates just getting defaulted to 01/01/01
         connection.on("MetadataExtracted", function (plateId) {
             console.info("Metadata extracted for plate ${plateId}");
         });
-
-        
 
         connection.start().catch(function (err) {
             console.error("Error while starting connection: " + err);

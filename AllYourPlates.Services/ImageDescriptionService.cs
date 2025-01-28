@@ -1,6 +1,5 @@
 ﻿using AllYourPlates.Hubs;
 using AllYourPlates.Utilities;
-using AllYourPlates.WebMVC.DataAccess;
 using Azure;
 using Azure.AI.Vision.ImageAnalysis;
 using Microsoft.AspNetCore.SignalR;
@@ -10,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
+using System.Text;
 
 
 namespace AllYourPlates.Services
@@ -18,11 +18,10 @@ namespace AllYourPlates.Services
     public class ImageDescriptionService : BackgroundService
     {
         private readonly IConfiguration _configuration;
-        //private readonly ApplicationDbContext _context;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ThumbnailProcessingService> _logger;
         private readonly IHubContext<NotificationHub> _hubContext;
-        private readonly ConcurrentQueue<Guid> _filePaths = new ConcurrentQueue<Guid>();
+        private readonly ConcurrentQueue<Guid> _filePaths = new();
         private readonly IOptions<ApplicationOptions> _applicationOptions;
         private readonly DirectoryInfo _imagesRoot;
         private readonly IPlateService _plateService;
@@ -38,7 +37,6 @@ namespace AllYourPlates.Services
                 _serviceProvider = serviceProvider;
                 _configuration = configuration;
                 var scope = _serviceProvider.CreateScope();
-                //_context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 _logger = logger;
                 _hubContext = hubContext;
                 _applicationOptions = applicationOptions;
@@ -90,31 +88,61 @@ namespace AllYourPlates.Services
 
             try
             {
-                ImageAnalysisClient client = new ImageAnalysisClient(
-            new Uri(_configuration["computerVisionEndpoint"]),
-            new AzureKeyCredential(_configuration["computerVisionAPIKey"]));
+                //ImageAnalysisClient client = new ImageAnalysisClient(
+                //    new Uri(_configuration["computerVisionEndpoint"]),
+                //    new AzureKeyCredential(_configuration["computerVisionAPIKey"]));
 
 
-                var platePath = Path.ChangeExtension(
-                    Path.Combine(_imagesRoot.FullName, plateId.ToString()),
-                    "jpeg");
+                //var platePath = Path.ChangeExtension(
+                //    Path.Combine(_imagesRoot.FullName, plateId.ToString()),
+                //    "jpeg");
 
-                // Use a file stream to pass the image data to the analyze call
-                using FileStream stream = new FileStream(platePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                //// Use a file stream to pass the image data to the analyze call
+                //using FileStream stream = new FileStream(platePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                ImageAnalysisResult result = client.Analyze(BinaryData.FromStream(stream), VisualFeatures.Caption);
+                //ImageAnalysisResult result = client.Analyze(BinaryData.FromStream(stream), VisualFeatures.Caption);
 
-                if (result.Caption.Text != null)
+                //if (result.Caption.Text != null)
+                //{
+                //    var plate = await _plateService.GetPlateAsync(plateId);
+
+                //    if (plate != null)
+                //    {
+                //        plate.Description = result.Caption.Text;
+                //        await _plateService.UpdatePlateAsync(plate);
+                //    }
+                //    NotifyClients("DescriptionGenerated", plateId, plate.Description);
+                //}
+
+
+                //TODO factor this out into a properly mocked class and just change the dependency
+                var random = new Random();
+                var sb = new StringBuilder();
+
+                for (int i = 0; i < random.Next(20,30); i++)
                 {
-                    var plate = await _plateService.GetPlateAsync(plateId);
-
-                    if (plate != null)
+                    if (random.Next(0, 5) == 0)
                     {
-                        plate.Description = result.Caption.Text;
-                        await _plateService.UpdatePlateAsync(plate);
+                        sb.Append(' ');
                     }
-                    NotifyClients("DescriptionGenerated", plateId, plate.Description);
+                    else
+                    {
+                        sb.Append((char) random.Next('a', 'z' + 1));
+                    }
                 }
+
+                var plate = await _plateService.GetPlateAsync(plateId);
+
+                if (plate != null)
+                {
+                    plate.Description = sb.ToString();
+                    await _plateService.UpdatePlateAsync(plate);
+                }
+                NotifyClients("DescriptionGenerated", plateId, plate.Description);
+
+
+
+
             }
             catch (Exception ex)
             {
