@@ -13,12 +13,12 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-COPY ["AllYourPlates.Services/AllYourPlates.Common.csproj", "AllYourPlates.Common/"]
+COPY ["AllYourPlates.Services/AllYourPlates.Services.csproj", "AllYourPlates.Common/"]
 COPY ["AllYourPlates.DataAccess/AllYourPlates.DataAccess.csproj", "AllYourPlates.DataAccess/"]
 COPY ["AllYourPlates.Hubs/AllYourPlates.Hubs.csproj", "AllYourPlates.Hubs/"]
 COPY ["AllYourPlates.Models/AllYourPlates.Models.csproj", "AllYourPlates.Models/"]
 COPY ["AllYourPlates.Services/AllYourPlates.Services.csproj", "AllYourPlates.Services/"]
-COPY ["AllYourPlates.Services/AllYourPlates.Utilities.csproj", "AllYourPlates.Utilities/"]
+COPY ["AllYourPlates.Utilities/AllYourPlates.Utilities.csproj", "AllYourPlates.Utilities/"]
 COPY ["AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj", "AllYourPlates.WebMVC/"]
 
 RUN dotnet restore "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
