@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /AllYourPlates.WebMVC/wwwroot/plates
 /AllYourPlates.WebMVC/app.db-shm
 /AllYourPlates.WebMVC/app.db-wal
+/AllYourPlates.WebMVC/app.db
