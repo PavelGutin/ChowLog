@@ -39,7 +39,7 @@ namespace AllYourPlates.Services
 
                 //await _plateRepository.AddPlateAsync(newPlate);
                 await _plateService.AddAsync(newPlate);
-                _plateImageStorage.SaveImage(newPlate.PlateId, item.File);
+                await _plateImageStorage.SaveImage(newPlate.PlateId, item.File);
                 _plateMetadataService.EnqueueFile(newPlate.PlateId);
                 _thumbnailService.EnqueueFile(newPlate.PlateId);
                 _imageDescriptionService.EnqueueFile(newPlate.PlateId);
