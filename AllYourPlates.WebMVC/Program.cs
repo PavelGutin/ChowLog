@@ -63,13 +63,13 @@ else
     app.UseHsts();
 }
 
-//// Apply migrations on startup
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    var dbContext = services.GetRequiredService<ApplicationDbContext>();
-//    dbContext.Database.Migrate();
-//}
+// Apply migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
