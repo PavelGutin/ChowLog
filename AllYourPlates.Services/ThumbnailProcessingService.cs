@@ -1,10 +1,8 @@
 ﻿using AllYourPlates.Hubs;
-using AllYourPlates.Utilities;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
@@ -17,24 +15,21 @@ namespace AllYourPlates.Services
     //TODO maybe using a tupple here is a bad idea, but creating a class just seems wrong 
     public class ThumbnailProcessingService : BackgroundService
     {
-        private readonly IConfiguration _configuration;
-        private readonly ConcurrentQueue<Guid> _plates = new ConcurrentQueue<Guid>();
+        //private readonly IConfiguration _configuration;
+        private readonly ConcurrentQueue<Guid> _plates = new();
         private readonly DirectoryInfo _imagesRoot;
         private readonly ILogger<ThumbnailProcessingService> _logger;
         private readonly IHubContext<NotificationHub> _hubContext;
-        private readonly IOptions<ApplicationOptions> _applicationOptions;
+
 
         public ThumbnailProcessingService(ILogger<ThumbnailProcessingService> logger,
             IHubContext<NotificationHub> hubContext,
-            IConfiguration configuration,
-            IOptions<ApplicationOptions> applicationOptions)
+            IConfiguration configuration)
         {
             _logger = logger;
             _hubContext = hubContext;
-            _configuration = configuration;
-            _applicationOptions = applicationOptions;
-
-            _imagesRoot = new DirectoryInfo(_applicationOptions.Value.ImagesRoot);
+            var path = Environment.GetEnvironmentVariable("IMAGES_PATH") ?? throw new ArgumentException("IMAGE_PATH not defined");
+            _imagesRoot = new DirectoryInfo(path);
         }
         public void EnqueueFile(Guid plateId)
         {
@@ -92,7 +87,7 @@ namespace AllYourPlates.Services
 
         public async Task NotifyClients(string method, string message)
         {
-            await _hubContext.Clients.All.SendAsync(method, message);
+            _hubContext.Clients.All.SendAsync(method, message);
         }
     }
 }

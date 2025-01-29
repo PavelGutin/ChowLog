@@ -9,17 +9,17 @@ namespace AllYourPlates.WebMVC.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IHubContext<NotificationHub> _hubContext;
+        //private readonly IHubContext<NotificationHub> _hubContext;
 
-        public HomeController(ILogger<HomeController> logger, IHubContext<NotificationHub> hubContext)
+        public HomeController(ILogger<HomeController> logger/*, IHubContext<NotificationHub> hubContext*/)
         {
             _logger = logger;
-            _hubContext = hubContext;
+            //_hubContext = hubContext;
         }
 
         public IActionResult Index()
         {
-            NotifyClients("Hello from PLATES INDEX!" + DateTime.UtcNow.ToLongTimeString());
+            //NotifyClients("Hello from PLATES INDEX!" + DateTime.UtcNow.ToLongTimeString());
             return View();
         }
 
@@ -37,7 +37,7 @@ namespace AllYourPlates.WebMVC.Controllers
         public async Task NotifyClients(string message)
         {
             // Notify all clients connected to the NotificationHub
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
+            //await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
         }
     }
 }

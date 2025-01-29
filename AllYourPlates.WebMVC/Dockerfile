@@ -1,12 +1,20 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
-USER app
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
+# Accept build arguments
+ARG BUILD_DATE
+ARG BUILD_SOURCE
+
+# Pass them as environment variables to the container
+ENV BUILD_DATE=$BUILD_DATE
+ENV BUILD_SOURCE=$BUILD_SOURCE
+
+ENV DB_PATH="/app/data/app.db"
+ENV IMAGES_PATH="/app/wwwroot/plates"
 
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
