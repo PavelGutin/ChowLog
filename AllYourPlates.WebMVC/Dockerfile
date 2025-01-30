@@ -36,19 +36,10 @@ COPY ["AllYourPlates.Services/AllYourPlates.Services.csproj", "AllYourPlates.Ser
 COPY ["AllYourPlates.Utilities/AllYourPlates.Utilities.csproj", "AllYourPlates.Utilities/"]
 COPY ["AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj", "AllYourPlates.WebMVC/"]
 
-#the copy comand belwo is new. 
-COPY . . 
 RUN dotnet restore "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
 RUN dotnet tool install --global dotnet-ef 
-RUN DB_PATH="/app/data/app.db" /root/.dotnet/tools/dotnet-ef migrations add InitialCreate \
-                        --project "./AllYourPlates.DataAccess/AllYourPlates.DataAccess.csproj" \
-                        --startup-project "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
-RUN DB_PATH="/app/data/app.db" /root/.dotnet/tools/dotnet-ef database update \
-                        --project "./AllYourPlates.DataAccess/AllYourPlates.DataAccess.csproj" \
-                        --startup-project "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
 
-
-#COPY . .
+COPY . .
 WORKDIR "/src/AllYourPlates.WebMVC"
 RUN dotnet build "./AllYourPlates.WebMVC.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
