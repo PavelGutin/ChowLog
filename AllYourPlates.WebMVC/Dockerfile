@@ -8,10 +8,12 @@ EXPOSE 8081
 # Accept build arguments
 ARG BUILD_DATE
 ARG BUILD_SOURCE
+ARG BUILD_VERSION
 
 # Pass them as environment variables to the container
 ENV BUILD_DATE=$BUILD_DATE
 ENV BUILD_SOURCE=$BUILD_SOURCE
+ENV APP_VERSION=$BUILD_VERSION
 
 ENV DB_PATH="/app/app.db"
 ENV IMAGES_PATH="/app/wwwroot/plates"

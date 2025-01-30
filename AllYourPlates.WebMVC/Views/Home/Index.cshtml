@@ -1,7 +1,44 @@
 ﻿@using AllYourPlates.WebMVC.DataAccess
+@inject IConfiguration Configuration
+@using System.Runtime.InteropServices
+@using System.Text.Json
+
 @{
     //TODO create a logo
     ViewData["Title"] = "Home Page";
+
+
+    // Get current version from environment variable or fallback
+    string currentVersion = Configuration["APP_VERSION"] ?? "unknown";
+
+    // Detect if running inside Docker
+    bool isRunningInDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+
+    // GitHub repository details
+    string githubApiUrl = "https://api.github.com/repos/YOUR_GITHUB_USER/YOUR_REPO/releases/latest";
+
+    // Function to fetch latest version from GitHub
+    async Task<string> GetLatestVersionAsync()
+    {
+        try
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0"); // GitHub API requires a User-Agent
+            var response = await client.GetStringAsync(githubApiUrl);
+            var json = JsonDocument.Parse(response);
+            return json.RootElement.GetProperty("tag_name").GetString();
+        }
+        catch
+        {
+            return "unknown";
+        }
+    }
+
+    // Fetch latest version
+    string latestVersion = await GetLatestVersionAsync();
+    bool updateAvailable = latestVersion != "unknown" && latestVersion != currentVersion;
+
+
 }
 
 <div class="text-center">
@@ -10,6 +47,22 @@
 
     <!-- Container for the list of messages -->
     <ul id="messageList"></ul> <!-- List to hold messages -->
+
+
+
+    <div class="mt-3">
+        <p><strong>Current Version:</strong> @currentVersion</p>
+        <p><strong>Running Inside Docker:</strong> @(isRunningInDocker ? "Yes" : "No")</p>
+
+        @if (updateAvailable)
+        {
+            <div class="alert alert-warning">
+                A new version (@latestVersion) is available! Please update.
+            </div>
+        }
+    </div>
+
+
 </div>
 
 @section Scripts {
