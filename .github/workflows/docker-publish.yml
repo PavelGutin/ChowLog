@@ -84,7 +84,8 @@ jobs:
           file: 'AllYourPlates.WebMVC/Dockerfile'
           build-args: |
             BUILD_DATE=${{ github.event.date || github.run_id }}
-            BUILD_SOURCE=Docker          
+            BUILD_SOURCE=Docker
+            BUILD_VERSION=${{ github.run_number }}
           # visibility: public
 
 #      # Sign the resulting Docker image digest except on PRs.
