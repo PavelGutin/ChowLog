@@ -14,31 +14,6 @@
     // Detect if running inside Docker
     bool isRunningInDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
-    // GitHub repository details
-    string githubApiUrl = "https://api.github.com/repos/YOUR_GITHUB_USER/YOUR_REPO/releases/latest";
-
-    // Function to fetch latest version from GitHub
-    async Task<string> GetLatestVersionAsync()
-    {
-        try
-        {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0"); // GitHub API requires a User-Agent
-            var response = await client.GetStringAsync(githubApiUrl);
-            var json = JsonDocument.Parse(response);
-            return json.RootElement.GetProperty("tag_name").GetString();
-        }
-        catch
-        {
-            return "unknown";
-        }
-    }
-
-    // Fetch latest version
-    string latestVersion = await GetLatestVersionAsync();
-    bool updateAvailable = latestVersion != "unknown" && latestVersion != currentVersion;
-
-
 }
 
 <div class="text-center">
@@ -51,15 +26,12 @@
 
 
     <div class="mt-3">
-        <p><strong>Current Version:</strong> @currentVersion</p>
+        <p><strong>Current Version:</strong> <span id="currentVersion">@currentVersion</span></p>
         <p><strong>Running Inside Docker:</strong> @(isRunningInDocker ? "Yes" : "No")</p>
 
-        @if (updateAvailable)
-        {
-            <div class="alert alert-warning">
-                A new version (@latestVersion) is available! Please update.
-            </div>
-        }
+        <div id="update-notice" class="alert alert-warning" style="display: none;">
+            A new version (<span id="latestVersion"></span>) is available! Please update.
+        </div>
     </div>
 
 
@@ -67,6 +39,31 @@
 
 @section Scripts {
     <script type="text/javascript">
+
+
+        async function checkForUpdates() {
+            const currentVersion = document.getElementById("currentVersion").innerText.trim();
+            const githubApiUrl = "https://api.github.com/repos/pavelgutin/allyourplates/releases/latest";
+
+            try {
+                const response = await fetch(githubApiUrl, {
+                    headers: { "Accept": "application/vnd.github.v3+json" }
+                });
+                const data = await response.json();
+                const latestVersion = data.tag_name;
+
+                if (latestVersion && latestVersion !== currentVersion) {
+                    document.getElementById("latestVersion").innerText = latestVersion;
+                    document.getElementById("update-notice").style.display = "block";
+                }
+            } catch (error) {
+                console.error("Error checking for updates:", error);
+            }
+        }
+
+        checkForUpdates();
+
+
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/notificationHub") // URL to your SignalR hub
             .build();
