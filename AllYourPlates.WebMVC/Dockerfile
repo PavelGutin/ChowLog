@@ -16,6 +16,13 @@ ENV BUILD_SOURCE=$BUILD_SOURCE
 ENV DB_PATH="/app/data/app.db"
 ENV IMAGES_PATH="/app/wwwroot/plates"
 
+
+# Create the necessary directories
+RUN mkdir -p "$(dirname "$DB_PATH")" && mkdir -p "$IMAGES_PATH"
+
+# Ensure correct permissions (optional, adjust as needed)
+RUN chmod -R 755 "$(dirname "$DB_PATH")" "$IMAGES_PATH"
+
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -31,6 +38,10 @@ COPY ["AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj", "AllYourPlates.WebMVC/
 
 RUN dotnet restore "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
 RUN dotnet tool install --global dotnet-ef 
+RUN /root/.dotnet/tools/dotnet-ef migrations add InitialCreate --project "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj" -v
+RUN /root/.dotnet/tools/dotnet-ef database update
+
+
 COPY . .
 WORKDIR "/src/AllYourPlates.WebMVC"
 RUN dotnet build "./AllYourPlates.WebMVC.csproj" -c $BUILD_CONFIGURATION -o /app/build
