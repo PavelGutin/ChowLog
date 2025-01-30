@@ -20,8 +20,6 @@ docker run -p 8181:8080 --name allyourplates ghcr.io/pavelgutin/allyourplates:ma
 
 TODO:
 
-- Improve serilog logging
 - Add unit tests
 - Figure out database location for persistence 
 - Abstract out file storage
-- Abstract out computer vision for development to stop hitting the paid API
