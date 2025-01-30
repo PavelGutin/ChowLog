@@ -36,6 +36,8 @@ COPY ["AllYourPlates.Services/AllYourPlates.Services.csproj", "AllYourPlates.Ser
 COPY ["AllYourPlates.Utilities/AllYourPlates.Utilities.csproj", "AllYourPlates.Utilities/"]
 COPY ["AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj", "AllYourPlates.WebMVC/"]
 
+
+COPY . . #this is new???
 RUN dotnet restore "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
 RUN dotnet tool install --global dotnet-ef 
 RUN /root/.dotnet/tools/dotnet-ef migrations add InitialCreate \
@@ -46,7 +48,7 @@ RUN /root/.dotnet/tools/dotnet-ef database update \
                         --startup-project "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
 
 
-COPY . .
+#COPY . .
 WORKDIR "/src/AllYourPlates.WebMVC"
 RUN dotnet build "./AllYourPlates.WebMVC.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
