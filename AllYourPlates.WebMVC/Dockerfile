@@ -36,8 +36,8 @@ COPY ["AllYourPlates.Services/AllYourPlates.Services.csproj", "AllYourPlates.Ser
 COPY ["AllYourPlates.Utilities/AllYourPlates.Utilities.csproj", "AllYourPlates.Utilities/"]
 COPY ["AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj", "AllYourPlates.WebMVC/"]
 
-
-COPY . . #this is new???
+#the copy comand belwo is new. 
+COPY . . 
 RUN dotnet restore "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
 RUN dotnet tool install --global dotnet-ef 
 RUN /root/.dotnet/tools/dotnet-ef migrations add InitialCreate \
