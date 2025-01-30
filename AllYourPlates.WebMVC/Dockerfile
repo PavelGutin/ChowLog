@@ -13,7 +13,7 @@ ARG BUILD_SOURCE
 ENV BUILD_DATE=$BUILD_DATE
 ENV BUILD_SOURCE=$BUILD_SOURCE
 
-ENV DB_PATH="/app/data/app.db"
+ENV DB_PATH="/app/app.db"
 ENV IMAGES_PATH="/app/wwwroot/plates"
 
 
