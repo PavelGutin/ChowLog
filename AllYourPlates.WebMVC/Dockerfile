@@ -40,10 +40,10 @@ COPY ["AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj", "AllYourPlates.WebMVC/
 COPY . . 
 RUN dotnet restore "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
 RUN dotnet tool install --global dotnet-ef 
-RUN /root/.dotnet/tools/dotnet-ef migrations add InitialCreate \
+RUN DB_PATH="/app/data/app.db" /root/.dotnet/tools/dotnet-ef migrations add InitialCreate \
                         --project "./AllYourPlates.DataAccess/AllYourPlates.DataAccess.csproj" \
                         --startup-project "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
-RUN /root/.dotnet/tools/dotnet-ef database update \
+RUN DB_PATH="/app/data/app.db" /root/.dotnet/tools/dotnet-ef database update \
                         --project "./AllYourPlates.DataAccess/AllYourPlates.DataAccess.csproj" \
                         --startup-project "./AllYourPlates.WebMVC/AllYourPlates.WebMVC.csproj"
 
