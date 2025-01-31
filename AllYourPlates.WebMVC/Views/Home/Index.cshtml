@@ -14,39 +14,33 @@
 
     <!-- Container for the list of messages -->
     <ul id="messageList"></ul> <!-- List to hold messages -->
-
-
-
-
-
-
 </div>
 
 @section Scripts {
     <script type="text/javascript">
 
+        //TODO: Add version checking to show a message when the version is out of date
 
-        async function checkForUpdates() {
-            const currentVersion = document.getElementById("currentVersion").innerText.trim();
-            const githubApiUrl = "https://api.github.com/repos/pavelgutin/allyourplates/releases/latest";
+        // async function checkForUpdates() {
+        //     const currentVersion = document.getElementById("currentVersion").innerText.trim();
+        //     const githubApiUrl = "https://api.github.com/repos/pavelgutin/allyourplates/releases/latest";
+        //     try {
+        //         const response = await fetch(githubApiUrl, {
+        //             headers: { "Accept": "application/vnd.github.v3+json" }
+        //         });
+        //         const data = await response.json();
+        //         const latestVersion = data.tag_name;
 
-            try {
-                const response = await fetch(githubApiUrl, {
-                    headers: { "Accept": "application/vnd.github.v3+json" }
-                });
-                const data = await response.json();
-                const latestVersion = data.tag_name;
+        //         if (latestVersion && latestVersion !== currentVersion) {
+        //             document.getElementById("latestVersion").innerText = latestVersion;
+        //             document.getElementById("update-notice").style.display = "block";
+        //         }
+        //     } catch (error) {
+        //         console.error("Error checking for updates:", error);
+        //     }
+        // }
 
-                if (latestVersion && latestVersion !== currentVersion) {
-                    document.getElementById("latestVersion").innerText = latestVersion;
-                    document.getElementById("update-notice").style.display = "block";
-                }
-            } catch (error) {
-                console.error("Error checking for updates:", error);
-            }
-        }
-
-        checkForUpdates();
+        // checkForUpdates();
 
 
         const connection = new signalR.HubConnectionBuilder()
