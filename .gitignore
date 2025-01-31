@@ -370,3 +370,11 @@ FodyWeavers.xsd
 /AllYourPlates.WebMVC/Data/app.db-wal
 /AllYourPlates.WebMVC/Data/AllYourPlates.db
 /AllYourPlates.WebMVC/Data
+/ChowLog.WebMVC/Data/Plates
+/ChowLog.WebMVC/Data/AllYourPlates.db
+/ChowLog.WebMVC/Data/AllYourPlates.db-shm
+/ChowLog.WebMVC/Data/AllYourPlates.db-wal
+/ChowLog.WebMVC/Data/app.db
+/ChowLog.WebMVC/Data/app.db-shm
+/ChowLog.WebMVC/Data/app.db-wal
+/ChowLog.WebMVC/Data/ChowLog.db

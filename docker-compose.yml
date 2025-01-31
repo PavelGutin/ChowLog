@@ -5,12 +5,12 @@ services:
     image: ${DOCKER_REGISTRY-}allyourplateswebmvc
     build:
       context: .
-      dockerfile: AllYourPlates.WebMVC/Dockerfile
+      dockerfile: ChowLog.WebMVC/Dockerfile
     ports:
       - "5000:80" # Map port 80 in the container to 5000 on the host
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - DefaultConnection=Server=db;Database=AllYourPlatesDB;User Id=sa;Password=1qaz!QAZ;TrustServerCertificate=True;
+      - DefaultConnection=Server=db;Database=ChowLogDB;User Id=sa;Password=1qaz!QAZ;TrustServerCertificate=True;
     depends_on:
       - db # Ensure the database starts before the app
     networks:

@@ -1,0 +1,132 @@
+﻿@model IEnumerable<ChowLog.WebMVC.ViewModels.PlateViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<p class="d-none d-md-block">
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
+</p>
+<div class="d-md-none">
+    <a asp-action="Create" class="btn btn-primary position-fixed bottom-0 end-0 m-3" style="border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <i class="bi bi-plus-lg"></i>
+    </a>
+</div>
+
+<div class="container mt-4">
+    @foreach (var group in Model
+    .GroupBy(p => p.Timestamp.Date)
+    .Select(g => new
+    {
+       Date = g.Key,
+       Plates = g.ToList()
+    }))
+    {
+        <h2 class="mb-3">@group.Date.ToString("MMMM d, yyyy")</h2>
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+
+            @foreach (var plate in group.Plates)
+            {
+                <div class="col">
+                    <div class="card h-100"
+                         data-bs-toggle="modal"
+                         data-bs-target="#imageModal"
+                         data-plate-card-id="@plate.PlateId"
+                         data-img-url="@plate.ImageUrl"
+                         data-img-alt="@plate.Description"
+                         data-plate-id="@plate.PlateId"
+                         style="cursor: pointer;">
+
+                        <img src="@(plate.Thumbnail)"
+                             id="plate_img_@(plate.PlateId)"
+                             alt="@plate.Description"
+                             class="card-img-top">
+
+                        <div class="card-img-overlay d-flex align-items-end p-0">
+                            <p id="plate_description_@(plate.PlateId)"
+                               class="card-text w-100 bg-white bg-opacity-75 text-dark text-center p-2 m-0 fs-4">@plate.Description</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <img src="" class="img-fluid mb-3" id="modalImage" alt="">
+                <div class="d-flex justify-content-center" id="imgDesc">
+                </div>
+                <div class="d-flex justify-content-center">
+                    <a href="#" class="btn btn-primary me-2" id="editButton">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </a>
+                    <a href="#" class="btn btn-info me-2" id="detailsButton">
+                        <i class="bi bi-info-circle"></i> Details
+                    </a>
+                    <a href="#" class="btn btn-danger" id="deleteButton">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var imageModal = document.getElementById('imageModal')
+        imageModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget
+            var imgUrl = button.getAttribute('data-img-url')
+            var imgAlt = button.getAttribute('data-img-alt')
+            var plateId = button.getAttribute('data-plate-id')
+            var modalImage = imageModal.querySelector('#modalImage')
+            modalImage.src = imgUrl
+            modalImage.alt = imgAlt
+
+            var imgDesc = imageModal.querySelector('#imgDesc')
+            imgDesc.innerHTML = imgAlt;
+
+            var editButton = imageModal.querySelector('#editButton')
+            var detailsButton = imageModal.querySelector('#detailsButton')
+            var deleteButton = imageModal.querySelector('#deleteButton')
+
+            var baseUrl = '@Url.Action("", "Plate")';
+
+            editButton.href = `${baseUrl}/Edit/${plateId}`;
+            detailsButton.href = `${baseUrl}/Details/${plateId}`;
+            deleteButton.href = `${baseUrl}/Delete/${plateId}`;
+        })
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub") 
+            .build();
+
+        connection.on("ThumbnailGenerated", function (plateId) {
+            console.info("Thumbnail generated for plate ${plateId}");
+            var plateImage = document.getElementById('plate_img_' + plateId)
+            plateImage.src = "/Plates/" + plateId + "_thmb.jpeg";
+        });
+
+        //TODO clean this up to get rid of hardcoded array indexes
+        connection.on("DescriptionGenerated", function (message) {
+            console.info("Description generated for plate ${plateId}");
+            var plateImage = document.getElementById('plate_description_' + message[0])
+            plateImage.innerHTML = message[1];
+        });
+
+        //TODO fix the plates just getting defaulted to 01/01/01
+        connection.on("MetadataExtracted", function (plateId) {
+            console.info("Metadata extracted for plate ${plateId}");
+        });
+
+        connection.start().catch(function (err) {
+            console.error("Error while starting connection: " + err);
+        });
+    </script>
+}

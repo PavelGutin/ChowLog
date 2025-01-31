@@ -1,0 +1,25 @@
+﻿@using ChowLog.WebMVC.DataAccess
+@{
+    ViewData["Title"] = "Privacy Policy";
+    /***********THIS IS FOR DEBUGGING ONLY**********/
+    // Injecting the database context to access data
+    @inject ApplicationDbContext _context
+
+    // Query the 10 most recently registered users
+    var users = _context.Users
+                        .OrderByDescending(u => u.Email)
+                        .Take(10)
+                        .ToList();
+    /***********THIS IS FOR DEBUGGING ONLY**********/
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>Use this page to detail your site's privacy policy.</p>
+
+<h3>Most Recently Registered Users</h3>
+<ul>
+    @foreach (var user in users)
+    {
+        <li>@user.Email</li>
+    }
+</ul>
