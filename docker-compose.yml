@@ -1,8 +1,8 @@
 version: '3.8' # Specify the Compose file version
 
 services:
-  allyourplates.webmvc:
-    image: ${DOCKER_REGISTRY-}allyourplateswebmvc
+  chowlog.webmvc:
+    image: ${DOCKER_REGISTRY-}chowlog
     build:
       context: .
       dockerfile: ChowLog.WebMVC/Dockerfile

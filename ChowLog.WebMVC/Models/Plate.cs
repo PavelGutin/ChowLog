@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
-namespace AllYourPlates.WebMVC.Models
+namespace ChowLog.WebMVC.Models
 {
     public class Plate
     {

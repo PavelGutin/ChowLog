@@ -4,7 +4,7 @@
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
       "serviceActions": {
-        "allyourplates.webmvc": "StartDebugging",
+        "chowlog.webmvc": "StartDebugging",
         "db": "StartWithoutDebugging"
       }
     }

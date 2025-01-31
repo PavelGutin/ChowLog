@@ -7,7 +7,7 @@
     <ProjectGuid>850612c8-985e-4ad7-a82e-a6eaf241e9b8</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}</DockerServiceUrl>
-    <DockerServiceName>allyourplates.webmvc</DockerServiceName>
+    <DockerServiceName>chowlog.webmvc</DockerServiceName>
     <UserSecretsId>9deba788-4175-4d02-aa0a-437d1f0ffb90</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>

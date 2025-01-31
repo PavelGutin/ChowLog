@@ -47,8 +47,8 @@ try
             .ReadFrom.Configuration(context.Configuration) // Allows configuration from appsettings.json
             .ReadFrom.Services(services) // Captures log context (like HttpContext)
             .WriteTo.Console()
-            .WriteTo.File($"{dataPath}/logs/allyourplates.log.txt", rollingInterval: RollingInterval.Day)
-            .WriteTo.File(new JsonFormatter(), $"{dataPath}/logs/allyourplates.log.json", rollingInterval: RollingInterval.Day) // JSON for tools
+            .WriteTo.File($"{dataPath}/logs/chowlog.log.txt", rollingInterval: RollingInterval.Day)
+            .WriteTo.File(new JsonFormatter(), $"{dataPath}/logs/chowlog.log.json", rollingInterval: RollingInterval.Day) // JSON for tools
             .Enrich.FromLogContext()
             .MinimumLevel.Information(); // Ensure all levels are logged
     });

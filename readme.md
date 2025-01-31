@@ -16,7 +16,7 @@ dotnet user-secrets set "computerVisionEndpoint" "API ENDPOING"
 To run the application
 
 ```powershell
-docker run -p 8181:8080 --name allyourplates ghcr.io/pavelgutin/allyourplates:master
+docker run -p 8181:8080 --name chowlog ghcr.io/pavelgutin/chowlog:master
 ```
 
 TODO:

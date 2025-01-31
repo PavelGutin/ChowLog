@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using AllYourPlates.WebMVC.Models;
+using ChowLog.WebMVC.Models;
 
-namespace AllYourPlates.WebMVC.Data
+namespace ChowLog.WebMVC.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {
@@ -10,6 +10,6 @@ namespace AllYourPlates.WebMVC.Data
             : base(options)
         {
         }
-        public DbSet<AllYourPlates.WebMVC.Models.Plate> Plate { get; set; } = default!;
+        public DbSet<ChowLog.WebMVC.Models.Plate> Plate { get; set; } = default!;
     }
 }
