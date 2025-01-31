@@ -1,11 +1,13 @@
 ﻿using AllYourPlates.Common;
 using AllYourPlates.Hubs;
+using AllYourPlates.Utilities;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 
 namespace AllYourPlates.Services
@@ -19,18 +21,21 @@ namespace AllYourPlates.Services
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly IServiceProvider _serviceProvider;
         private readonly IPlateService _plateService;
+        private readonly IOptions<ApplicationOptions> _applicationOptions;
 
         public PlateMetadataService(ILogger<ThumbnailProcessingService> logger,
             IHubContext<NotificationHub> hubContext,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            IOptions<ApplicationOptions> applicationOptions)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
             _hubContext = hubContext;
             var scope = _serviceProvider.CreateScope();
             //TODO environment variable should be a fallback. The value should be in a configuration file
-            var path = Environment.GetEnvironmentVariable("IMAGES_PATH") ?? throw new ArgumentException("IMAGE_PATH not defined");
-            _imagesRoot = new DirectoryInfo(path);
+
+            _applicationOptions = applicationOptions;
+            _imagesRoot = new DirectoryInfo($"{_applicationOptions.Value.DataPath}/Plates");
             _plateService = scope.ServiceProvider.GetRequiredService<IPlateService>();
         }
 

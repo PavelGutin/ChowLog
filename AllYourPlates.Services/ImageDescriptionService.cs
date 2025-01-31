@@ -40,7 +40,7 @@ namespace AllYourPlates.Services
                 _logger = logger;
                 _hubContext = hubContext;
                 _applicationOptions = applicationOptions;
-                _imagesRoot = new DirectoryInfo(_applicationOptions.Value.ImagesRoot);
+                _imagesRoot = new DirectoryInfo($"{_applicationOptions.Value.DataPath}/Plates");
                 _plateService = scope.ServiceProvider.GetRequiredService<IPlateService>();
             }
             catch (Exception ex)

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Collections;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -15,7 +16,6 @@ try
 {
     Log.Information("Starting web application");
 
-    var dbPath = Environment.GetEnvironmentVariable("DB_PATH") ?? throw new ArgumentException("DB_PATH not defined");
 
     var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +35,20 @@ try
 
     // Add services to the container.
     builder.Services.AddControllersWithViews();
-    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite($"Data Source={dbPath};"));
+
+
+    builder.Services.Configure<ApplicationOptions>(builder.Configuration.GetSection(nameof(ApplicationOptions)));
+
+
+    var dbPath = builder.Configuration.GetSection(nameof(ApplicationOptions)).Get<ApplicationOptions>()?.DataPath
+             ?? throw new ArgumentException("DB_PATH not defined");
+
+    var envVariables = Environment.GetEnvironmentVariables();
+    foreach (DictionaryEntry env in envVariables)
+    {
+        Console.WriteLine($"{env.Key}: {env.Value}");
+    }
+    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite($"Data Source={dbPath}/AllYourPlates.db;"));
     builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
         .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -47,8 +60,7 @@ try
         options.MultipartBodyLengthLimit = 524288000; // 500 MB
     });
 
-    builder.Services.Configure<ApplicationOptions>(
-        builder.Configuration.GetSection(nameof(ApplicationOptions)));
+
 
     builder.Services.AddScoped<IPlateService, PlateService>();
     builder.Services.AddScoped<IPlateOrchestrator, PlateOrchestrator>();

@@ -2,6 +2,6 @@
 {
     public class ApplicationOptions
     {
-        public required string ImagesRoot { get; init; }
+        public required string DataPath { get; init; }
     }
 }

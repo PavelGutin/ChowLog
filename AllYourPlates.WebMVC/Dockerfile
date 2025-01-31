@@ -15,15 +15,15 @@ ENV BUILD_DATE=$BUILD_DATE
 ENV BUILD_SOURCE=$BUILD_SOURCE
 ENV APP_VERSION=$BUILD_VERSION
 
-ENV DB_PATH="/app/app.db"
-ENV IMAGES_PATH="/app/wwwroot/plates"
+#ENV DB_PATH="/app/app.db"
+#ENV IMAGES_PATH="/app/wwwroot/plates"
 
 
-# Create the necessary directories
-RUN mkdir -p "$(dirname "$DB_PATH")" && mkdir -p "$IMAGES_PATH"
-
-# Ensure correct permissions (optional, adjust as needed)
-RUN chmod -R 755 "$(dirname "$DB_PATH")" "$IMAGES_PATH"
+## Create the necessary directories
+#RUN mkdir -p "$(dirname "$DB_PATH")" && mkdir -p "$IMAGES_PATH"
+#
+## Ensure correct permissions (optional, adjust as needed)
+#RUN chmod -R 755 "$(dirname "$DB_PATH")" "$IMAGES_PATH"
 
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build

@@ -28,7 +28,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DB_PATH": "app.db",
-        "IMAGES_PATH" : "wwwroot/plates"
+        "IMAGES_PATH": "wwwroot/plates"
       }
     },
     "Container (Dockerfile)": {
@@ -37,7 +37,8 @@
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
       "environmentVariables": {
         "ASPNETCORE_HTTPS_PORTS": "8081",
-        "ASPNETCORE_HTTP_PORTS": "8080"
+        "ASPNETCORE_HTTP_PORTS": "8080",
+        "ApplicationOptions__DataPath": "Data"
       },
       "publishAllPorts": true,
       "useSSL": true
