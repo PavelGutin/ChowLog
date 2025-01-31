@@ -25,6 +25,9 @@ ENV APP_VERSION=$BUILD_VERSION
 ## Ensure correct permissions (optional, adjust as needed)
 #RUN chmod -R 755 "$(dirname "$DB_PATH")" "$IMAGES_PATH"
 
+RUN mkdir -p /app/Data/Plates && chown -R app:app /app/Data
+
+
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
