@@ -1,10 +1,12 @@
 ﻿using AllYourPlates.Services;
 using AllYourPlates.Services.Payloads;
+using AllYourPlates.Utilities;
 using AllYourPlates.WebMVC.DataAccess;
 using AllYourPlates.WebMVC.Models;
 using AllYourPlates.WebMVC.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 
@@ -17,18 +19,20 @@ namespace AllYourPlates.WebMVC.Controllers
         private readonly IPlateOrchestrator _plateOrchestrator;
         private readonly IConfiguration _configuration;
         //private readonly IPlateService _plateService;
+        private readonly IOptions<ApplicationOptions> _applicationOptions;
 
         public PlateController(ApplicationDbContext context,
             UserManager<IdentityUser> userManager,
             //IPlateService plateService,
             IPlateOrchestrator plateOrchestrator,
-            IConfiguration configuration
-            )
+            IConfiguration configuration,
+            IOptions<ApplicationOptions> applicationOptions)
         {
             _userManager = userManager;
             //_plateService = plateService;
             _plateOrchestrator = plateOrchestrator;
             _configuration = configuration;
+            _applicationOptions = applicationOptions;
         }
 
         // GET: Plates
@@ -39,11 +43,15 @@ namespace AllYourPlates.WebMVC.Controllers
             var data = await _plateOrchestrator.GetAllPlatesAsync(user);
             var plates = new List<PlateViewModel>();
 
+            //var _imagesRoot = new DirectoryInfo($"{_applicationOptions.Value.DataPath}/Plates");
+            var _imagesRoot = "/Plates";
+
             plates.AddRange(data.Select(p => new PlateViewModel
             {
                 PlateId = p.PlateId,
                 Timestamp = p.Timestamp,
-                Thumbnail = "/plates/" + p.PlateId.ToString() + "_thmb.jpeg", //TODO this needs to be abstracted out
+                ImageUrl = $"{_imagesRoot}/{p.PlateId.ToString()}.jpeg", //TODO this needs to be abstracted out
+                Thumbnail = $"{_imagesRoot}/{p.PlateId.ToString()}_thmb.jpeg", 
                 Description = p.Description
             }));
 

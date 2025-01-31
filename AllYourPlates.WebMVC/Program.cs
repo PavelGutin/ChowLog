@@ -5,7 +5,9 @@ using AllYourPlates.WebMVC.DataAccess;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Serilog;
+using Serilog.Formatting.Json;
 using System.Collections;
 
 Log.Logger = new LoggerConfiguration()
@@ -15,12 +17,29 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting web application");
-
+    Log.Information("Current user: {User}", Environment.UserName);
 
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Logging.ClearProviders();
     builder.Logging.AddSerilog();
+
+    var dataPath = builder.Configuration.GetSection(nameof(ApplicationOptions)).Get<ApplicationOptions>()?.DataPath
+             ?? throw new ArgumentException("DataPath not defined");
+
+    //TODO. Is this the best place for this? 
+    var platesDirectory = Path.Combine(dataPath, "Plates");
+    if (!Directory.Exists(platesDirectory))
+    {
+        Directory.CreateDirectory(platesDirectory);
+    }
+
+    //// Ensure the directory is writable by removing the read-only attribute (if set)
+    //var attributes = File.GetAttributes(platesDirectory);
+    //if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+    //{
+    //    File.SetAttributes(platesDirectory, attributes & ~FileAttributes.ReadOnly); // Remove ReadOnly
+    //}
 
     builder.Host.UseSerilog((context, services, configuration) =>
     {
@@ -28,9 +47,10 @@ try
             .ReadFrom.Configuration(context.Configuration) // Allows configuration from appsettings.json
             .ReadFrom.Services(services) // Captures log context (like HttpContext)
             .WriteTo.Console()
-            .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
+            .WriteTo.File($"{dataPath}/logs/allyourplates.log.txt", rollingInterval: RollingInterval.Day)
+            .WriteTo.File(new JsonFormatter(), $"{dataPath}/logs/allyourplates.log.json", rollingInterval: RollingInterval.Day) // JSON for tools
             .Enrich.FromLogContext()
-            .MinimumLevel.Debug(); // Ensure all levels are logged
+            .MinimumLevel.Information(); // Ensure all levels are logged
     });
 
     // Add services to the container.
@@ -40,15 +60,13 @@ try
     builder.Services.Configure<ApplicationOptions>(builder.Configuration.GetSection(nameof(ApplicationOptions)));
 
 
-    var dbPath = builder.Configuration.GetSection(nameof(ApplicationOptions)).Get<ApplicationOptions>()?.DataPath
-             ?? throw new ArgumentException("DB_PATH not defined");
 
     var envVariables = Environment.GetEnvironmentVariables();
     foreach (DictionaryEntry env in envVariables)
     {
         Console.WriteLine($"{env.Key}: {env.Value}");
     }
-    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite($"Data Source={dbPath}/AllYourPlates.db;"));
+    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite($"Data Source={dataPath}/AllYourPlates.db;"));
     builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
         .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -137,6 +155,15 @@ try
     app.MapHub<NotificationHub>("/notificationHub");
 
     app.UseHttpsRedirection();
+
+    // Serve static files from the "Plates" directory
+    var platesPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "Plates");
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(platesPath),
+        RequestPath = "/Plates"  // You can access files like /Plates/filename
+    });
+
     app.UseStaticFiles();
 
     app.Run();

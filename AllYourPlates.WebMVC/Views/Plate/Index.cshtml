@@ -4,11 +4,14 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
+<p class="d-none d-md-block">
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
+<div class="d-md-none">
+    <a asp-action="Create" class="btn btn-primary position-fixed bottom-0 end-0 m-3" style="border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+        <i class="bi bi-plus-lg"></i>
+    </a>
+</div>
 
 <div class="container mt-4">
     @foreach (var group in Model
@@ -29,7 +32,7 @@
                          data-bs-toggle="modal"
                          data-bs-target="#imageModal"
                          data-plate-card-id="@plate.PlateId"
-                         data-img-url="@Url.Content($"~/plates/{plate.PlateId}.jpeg")"
+                         data-img-url="@plate.ImageUrl"
                          data-img-alt="@plate.Description"
                          data-plate-id="@plate.PlateId"
                          style="cursor: pointer;">
@@ -107,7 +110,7 @@
         connection.on("ThumbnailGenerated", function (plateId) {
             console.info("Thumbnail generated for plate ${plateId}");
             var plateImage = document.getElementById('plate_img_' + plateId)
-            plateImage.src = "/plates/" + plateId + "_thmb.jpeg";
+            plateImage.src = "/Plates/" + plateId + "_thmb.jpeg";
         });
 
         //TODO clean this up to get rid of hardcoded array indexes
