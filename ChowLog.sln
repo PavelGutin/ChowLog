@@ -24,6 +24,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChowLog.Utilities", "ChowLo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChowLog.Common", "ChowLog.Common\ChowLog.Common.csproj", "{C9A46667-FF01-4A54-9FD2-ACB94237EA52}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChowLog.Blazor", "ChowLog.Blazor\ChowLog.Blazor\ChowLog.Blazor.csproj", "{D63BF402-70C1-4CFB-9C76-21C7EC58BB9F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChowLog.Blazor.Client", "ChowLog.Blazor\ChowLog.Blazor.Client\ChowLog.Blazor.Client.csproj", "{DC8A9B52-1244-4048-B0A4-F3B4702ED2B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +66,14 @@ Global
 		{C9A46667-FF01-4A54-9FD2-ACB94237EA52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9A46667-FF01-4A54-9FD2-ACB94237EA52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9A46667-FF01-4A54-9FD2-ACB94237EA52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D63BF402-70C1-4CFB-9C76-21C7EC58BB9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D63BF402-70C1-4CFB-9C76-21C7EC58BB9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D63BF402-70C1-4CFB-9C76-21C7EC58BB9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D63BF402-70C1-4CFB-9C76-21C7EC58BB9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC8A9B52-1244-4048-B0A4-F3B4702ED2B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC8A9B52-1244-4048-B0A4-F3B4702ED2B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC8A9B52-1244-4048-B0A4-F3B4702ED2B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC8A9B52-1244-4048-B0A4-F3B4702ED2B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
